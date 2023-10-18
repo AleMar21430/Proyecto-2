@@ -33,8 +33,14 @@ def cfg_to_cnf(cfg):
 
 # Example CFG
 cfg = {
-	'S': ['aSb', ''],
-	'A': ['aAb', 'c']
+	'S'  : ['NP VP'],
+	'VP' : ['VP PP', 'V NP', 'cooks', 'drinks', 'eats', 'cuts'],
+	'PP' : ['P NP'],
+	'NP' : ['Det N', 'it', 'she'],
+	'V'  : ['cooks', 'drinks', 'eats', 'cuts'],
+	'P'  : ['in', 'with'],
+	'N'  : ['cat', 'dog', 'beer', 'cake', 'juice', 'meat', 'soup', 'fork', 'knife', 'oven', 'spoon'],
+	'Det': ['a', 'the']
 }
 
 cnf_grammar = cfg_to_cnf(cfg)
