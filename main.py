@@ -1,37 +1,46 @@
-def remove_epsilon(cfg):
-	# Remove ε-productions
-	pass
+def remove_useless_productions(cfg):
+	# Step 1: Identify reachable non-terminals
+	reachable_nonterminals = set()
+	pending = ['S']
 
-def remove_unit(cfg):
-	# Remove unit productions
-	pass
+	while pending:
+		current = pending.pop()
+		for production in cfg[current]:
+			for symbol in production:
+				if symbol.isupper() and symbol not in reachable_nonterminals:
+					reachable_nonterminals.add(symbol)
+					pending.append(symbol)
 
-def remove_useless(cfg):
-	# Remove useless symbols
-	pass
+	# Step 2: Identify reachable productions
+	new_cfg = {}
+	for nonterminal, productions in cfg.items():
+		if nonterminal in reachable_nonterminals:
+			new_productions = []
+			for production in productions:
+				if all(symbol in reachable_nonterminals or not symbol.isupper() for symbol in production):
+					new_productions.append(production)
+			if new_productions:
+				new_cfg[nonterminal] = new_productions
 
-def eliminate_long_productions(cfg):
-	# Eliminate productions with more than two symbols
-	pass
+	# Step 3: Remove unused non-terminals
+	for nonterminal in cfg.keys():
+		if nonterminal not in reachable_nonterminals:
+			new_cfg.pop(nonterminal, None)
 
-def eliminate_chain_productions(cfg):
-	# Eliminate chain productions
-	pass
+	first_item = next(iter(cfg.items()))
+	new_cfg = {first_item[0]: first_item[1], **new_cfg}
+	return new_cfg
 
-def add_new_start_symbol(cfg):
-	# Add a new start symbol
-	pass
 
+
+
+
+
+# MAIN
 def cfg_to_cnf(cfg):
-	remove_epsilon(cfg)
-	remove_unit(cfg)
-	remove_useless(cfg)
-	eliminate_long_productions(cfg)
-	eliminate_chain_productions(cfg)
-	add_new_start_symbol(cfg)
+	cfg = remove_useless_productions(cfg)
 	return cfg
 
-# Example CFG
 cfg = {
 	'S'  : ['NP VP'],
 	'VP' : ['VP PP', 'V NP', 'cooks', 'drinks', 'eats', 'cuts'],
@@ -41,6 +50,14 @@ cfg = {
 	'P'  : ['in', 'with'],
 	'N'  : ['cat', 'dog', 'beer', 'cake', 'juice', 'meat', 'soup', 'fork', 'knife', 'oven', 'spoon'],
 	'Det': ['a', 'the']
+}
+
+cfg = {
+	'S': ['AB', 'BC', 'ABBC'],
+	'A': ['aA', 'a'],
+	'B': ['bB', 'bC', 'c'],
+	'C': ['cC', 'c'],
+	'D': ['d']
 }
 
 cnf_grammar = cfg_to_cnf(cfg)
