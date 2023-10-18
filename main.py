@@ -1,67 +1,43 @@
-import re
+def remove_epsilon(cfg):
+	# Remove ε-productions
+	pass
 
-def load_grammar(filename):
-	grammar = []
-	with open(filename, 'r', encoding='utf-8') as file:
-		for line in file:
-			line = line.strip()
-			#if not line:
-			#	continue
-			#if re.match(r'^([A-Z])\s*->\s*(([A-Za-z0-9ε|]*\s*)*)$', line):
-			non_terminal, productions = line.split('->')
-			grammar.append((non_terminal.strip(), productions))
-			#else:
-			#	print(f"Producción inválida en: '{line}'")
-			#	return None
-	return grammar
+def remove_unit(cfg):
+	# Remove unit productions
+	pass
 
-def find_nullable_symbols(grammar):
-	nullable = set()
-	for production in grammar:
-		if 'ε' in production[1]:
-			nullable.add(production[0])
-	return nullable
+def remove_useless(cfg):
+	# Remove useless symbols
+	pass
 
-def generate_epsilon_free_grammar(grammar, nullable):
-	changes = []
-	result = {}
-	non_terminal = []
-	for productions in grammar:
-		production = productions[1].strip().split("|")
-		new = []
-		for product in production:
-			if "ε" in product:
-				continue
-			else:
-				for non_terminal in nullable:
-					if non_terminal in product:
-						modified = product.replace(non_terminal,"")
-						if modified != "":
-							new.append(product)
-							new.append(modified)
-			new.append(product)
-			non_terminal = set(new)
-			new = list(non_terminal)
-		new = [s for s in new if s.strip() != ""]
-		changes.append(new)
-		for i in range (len(changes)):
-			products= "|".join(changes[i])
-			result[productions[0]] = re.sub(r'\s*\|\s*', ' | ', products).lstrip()
-	return result
+def eliminate_long_productions(cfg):
+	# Eliminate productions with more than two symbols
+	pass
 
-grammar = load_grammar("gramatica.txt")
-if grammar:
-	print("---------- Gramática original")
-	for productions in grammar:
-		print(f"{productions[0]} -> {productions[1]}")
+def eliminate_chain_productions(cfg):
+	# Eliminate chain productions
+	pass
 
-	nullable = find_nullable_symbols(grammar)
+def add_new_start_symbol(cfg):
+	# Add a new start symbol
+	pass
 
-	print("---------- Símbolos anulables")
-	print(', '.join(nullable))
+def cfg_to_cnf(cfg):
+	remove_epsilon(cfg)
+	remove_unit(cfg)
+	remove_useless(cfg)
+	eliminate_long_productions(cfg)
+	eliminate_chain_productions(cfg)
+	add_new_start_symbol(cfg)
+	return cfg
 
-	epsilon_free_grammar = generate_epsilon_free_grammar(grammar, nullable)
+# Example CFG
+cfg = {
+	'S': ['aSb', ''],
+	'A': ['aAb', 'c']
+}
 
-	print("---------- Gramática sin producciones-𝜀")
-	for non_terminal, productions in epsilon_free_grammar.items():
-		print(f"{non_terminal} -> {productions}")
+cnf_grammar = cfg_to_cnf(cfg)
+for non_terminal, productions in cnf_grammar.items():
+	for production in productions:
+		print(f"{non_terminal} -> {production}")
