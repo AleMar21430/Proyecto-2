@@ -69,7 +69,7 @@ def remove_epsilon_productions(cfg: Dict[str, List[str]]):
 # MAIN
 def cfg_to_cnf(cfg):
 	cfg = remove_useless_productions(cfg)  # CORRECT
-	cfg = remove_epsilon_productions(cfg)  # TODO: B -> b ??
+	cfg = remove_epsilon_productions(cfg)  # TODO: does not eliminate ε,  removes AB BC
 	return cfg
 
 cfg = {
@@ -102,6 +102,6 @@ for non_terminal, productions in cnf_grammar.items():
 		lines.append(f"{non_terminal} -> {production}\n")
 
 lines[-1] = lines[-1][:-1]
-with open('cfn.txt', 'w', encoding='utf-8') as file:
+with open('cnf.txt', 'w', encoding='utf-8') as file:
 	for line in lines:
 		file.write(line)

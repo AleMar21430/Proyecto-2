@@ -1,0 +1,13 @@
+S -> A
+S -> C
+A -> aA
+A -> a
+A -> A
+B -> bC
+B -> c
+B -> ε
+B -> b
+B -> C
+C -> cC
+C -> c
+C -> C
