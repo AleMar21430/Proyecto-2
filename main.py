@@ -1,4 +1,6 @@
-def remove_useless_productions(cfg):
+from typing import Dict, List
+
+def remove_useless_productions(cfg: Dict[str,List[str]]):
 	# Step 1: Identify reachable non-terminals
 	reachable_nonterminals = set()
 	pending = ['S']
@@ -32,7 +34,7 @@ def remove_useless_productions(cfg):
 	return new_cfg
 
 
-def remove_epsilon_productions(cfg):
+def remove_epsilon_productions(cfg: Dict[str, List[str]]):
 	# Step 1: Find nullable variables
 	nullable = set()
 	for variable, productions in cfg.items():
@@ -64,8 +66,6 @@ def remove_epsilon_productions(cfg):
 
 	return new_cfg
 
-
-
 # MAIN
 def cfg_to_cnf(cfg):
 	cfg = remove_useless_productions(cfg)  # CORRECT
@@ -84,7 +84,7 @@ cfg = {
 }
 
 cfg = {
-	'S': ['AB', 'BC', 'ABBC'],
+	'S': ['AB', 'BC', 'AB BC'],
 	'A': ['aA', 'a'],
 	'B': ['bB', 'bC', 'c', 'ε'],
 	'C': ['cC', 'c'],
@@ -96,6 +96,12 @@ cfg = {
 #src: https://www.geeksforgeeks.org/converting-context-free-grammar-chomsky-normal-form/
 
 cnf_grammar = cfg_to_cnf(cfg)
+lines = []
 for non_terminal, productions in cnf_grammar.items():
 	for production in productions:
-		print(f"{non_terminal} -> {production}")
+		lines.append(f"{non_terminal} -> {production}\n")
+
+lines[-1] = lines[-1][:-1]
+with open('cfn.txt', 'w', encoding='utf-8') as file:
+	for line in lines:
+		file.write(line)
