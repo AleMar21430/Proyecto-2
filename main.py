@@ -5,14 +5,14 @@ def load_grammar(filename):
 	with open(filename, 'r', encoding='utf-8') as file:
 		for line in file:
 			line = line.strip()
-			if not line:
-				continue
-			if re.match(r'^([A-Z])\s*->\s*(([A-Za-z0-9ε|]*\s*)*)$', line):
-				non_terminal, productions = line.split('->')
-				grammar.append((non_terminal.strip(), productions))
-			else:
-				print(f"Producción inválida en: '{line}'")
-				return None
+			#if not line:
+			#	continue
+			#if re.match(r'^([A-Z])\s*->\s*(([A-Za-z0-9ε|]*\s*)*)$', line):
+			non_terminal, productions = line.split('->')
+			grammar.append((non_terminal.strip(), productions))
+			#else:
+			#	print(f"Producción inválida en: '{line}'")
+			#	return None
 	return grammar
 
 def find_nullable_symbols(grammar):
@@ -49,7 +49,7 @@ def generate_epsilon_free_grammar(grammar, nullable):
 			result[productions[0]] = re.sub(r'\s*\|\s*', ' | ', products).lstrip()
 	return result
 
-grammar = load_grammar("gramatica 2.txt")
+grammar = load_grammar("gramatica.txt")
 if grammar:
 	print("---------- Gramática original")
 	for productions in grammar:
