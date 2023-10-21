@@ -15,6 +15,7 @@ def log_input(val: str):
 
 class Grammar :
 	Rules: Dict[str,List[str]] = {}
+	Symbolic = False
 
 	def addRule(self, rule: str) :
 		name = rule.split("->")[0].strip()
@@ -34,30 +35,52 @@ class Grammar :
 		reachable_nonterminals = set()
 		pending = [next(iter(self.Rules.keys()))]
 
-		while pending:
-			current = pending.pop()
-			print(current)
-			for production in self.Rules[current]:
-				for product in production.split():
-					for symbol in product:
-						if symbol.isupper() and symbol  in reachable_nonterminals:
+		if self.Symbolic:
+			while pending:
+				current = pending.pop()
+				print(current)
+				for production in self.Rules[current]:
+					for symbol in production:
+						if symbol.isupper() and symbol not in reachable_nonterminals:
 							reachable_nonterminals.add(symbol)
 							pending.append(symbol)
-					if product.isupper() and product not in reachable_nonterminals:
-						reachable_nonterminals.add(product)
-						pending.append(product)
-
-		# Step 2: Identify reachable productions
-		new_cfg = {}
-		for nonterminal, productions in self.Rules.items():
-			if nonterminal in reachable_nonterminals:
+				# Step 2: Identify reachable productions
+				new_cfg = {}
+				for nonterminal, productions in self.Rules.items():
+					if nonterminal in reachable_nonterminals:
+						new_productions = []
+						for production in productions:
+							for product in production.split():
+								if all(symbol in reachable_nonterminals or not symbol.isupper() for symbol in product):
+									new_productions.append(product)
+						if new_productions:
+							new_cfg[nonterminal] = new_productions
+		else:
+			while pending:
+				current = pending.pop()
+				for production in self.Rules[current]:
+					for product in production.split():
+						for symbol in product:
+							if symbol.isupper() and symbol in reachable_nonterminals:
+								reachable_nonterminals.add(symbol)
+								pending.append(symbol)
+						if product.isupper() and product not in reachable_nonterminals:
+							reachable_nonterminals.add(product)
+							pending.append(product)
+			# Step 2: Identify reachable productions
+			new_cfg = {}
+			for nonterminal, productions in self.Rules.items():
 				new_productions = []
 				for production in productions:
 					for product in production.split():
-						if all(symbol in reachable_nonterminals or not symbol.isupper() for symbol in product):
+						if product.islower():
 							new_productions.append(product)
+						if product in reachable_nonterminals:
+							if production not in new_productions:
+								new_productions.append(production)
 				if new_productions:
 					new_cfg[nonterminal] = new_productions
+
 
 		# Step 3: Remove unused non-terminals
 		for nonterminal in self.Rules.keys():
@@ -140,7 +163,7 @@ class Grammar :
 		self.Rules = start_sym  = self.remove_start_symbol()        # Done  step 1 page 2
 
 		self.Rules = useless    = self.remove_useless_productions() # Done  step 1 page 1 \
-		self.Rules = epsilon    = self.remove_epsilon_productions() # Done? step 2 page 1  } step 2 page 2
+		self.Rules = epsilon    = self.remove_epsilon_productions() # Done  step 2 page 1  } step 2 page 2
 		self.Rules = unit_prod  = self.remove_unit_productions()    # TODO  step 3 page 1 /
 
 		self.Rules = terminals  = self.remove_terminals()           # TODO  step 3 page 2
@@ -185,7 +208,7 @@ class Grammar :
 cfg = Grammar()
 for line in open("cfg.txt", "r", -1, "utf-8").readlines():
 	cfg.addRule(line.strip())
-
+cfg.Symbolic = False
 
 log("------------------- Context Free Grammar -------------------------")
 for non_terminal, productions in cfg.Rules.items(): log( f"{non_terminal} -> { ' | '.join(productions)}")
