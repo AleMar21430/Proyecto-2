@@ -2,6 +2,18 @@ from typing import Dict, List
 import itertools
 import string
 
+open("log.txt", "w", -1, "utf-8").write("")
+
+def log(val: str):
+	print(val)
+	open("log.txt", "a", -1, "utf-8").write(val + "\n")
+
+def log_input(val: str):
+	question = val
+	val = input(val)
+	open("log.txt", "a", -1, "utf-8").write(question + val + "\n")
+	return val
+
 class Grammar :
 	Rules: Dict[str,List[str]] = {}
 
@@ -137,18 +149,18 @@ class Grammar :
 		self.Rules = duplicates = self.remove_duplicate_symbols()   # TODO  step 4 page 2
 
 
-		print("------------------- Remove Start Symbol --------------------------")
-		for non_terminal, productions in start_sym.items() : print( f"{non_terminal} -> { ' | '.join(productions)}")
-		print("------------------- Remove Useless Productions -------------------")
-		for non_terminal, productions in useless.items()   : print( f"{non_terminal} -> { ' | '.join(productions)}")
-		print("------------------- Remove Epsilon Productions -------------------")
-		for non_terminal, productions in epsilon.items()   : print( f"{non_terminal} -> { ' | '.join(productions)}")
-		print("------------------- Remove Unit Productions ----------------------")
-		for non_terminal, productions in unit_prod.items() : print( f"{non_terminal} -> { ' | '.join(productions)}")
-		print("------------------- Remove Terminals -----------------------------")
-		for non_terminal, productions in terminals.items() : print( f"{non_terminal} -> { ' | '.join(productions)}")
-		print("------------------- Remove Duplicates ----------------------------")
-		for non_terminal, productions in duplicates.items(): print( f"{non_terminal} -> { ' | '.join(productions)}")
+		log("------------------- Remove Start Symbol --------------------------")
+		for non_terminal, productions in start_sym.items() : log( f"{non_terminal} -> { ' | '.join(productions)}")
+		log("------------------- Remove Useless Productions -------------------")
+		for non_terminal, productions in useless.items()   : log( f"{non_terminal} -> { ' | '.join(productions)}")
+		log("------------------- Remove Epsilon Productions -------------------")
+		for non_terminal, productions in epsilon.items()   : log( f"{non_terminal} -> { ' | '.join(productions)}")
+		log("------------------- Remove Unit Productions ----------------------")
+		for non_terminal, productions in unit_prod.items() : log( f"{non_terminal} -> { ' | '.join(productions)}")
+		log("------------------- Remove Terminals -----------------------------")
+		for non_terminal, productions in terminals.items() : log( f"{non_terminal} -> { ' | '.join(productions)}")
+		log("------------------- Remove Duplicates ----------------------------")
+		for non_terminal, productions in duplicates.items(): log( f"{non_terminal} -> { ' | '.join(productions)}")
 
 
 		return self.Rules
@@ -177,21 +189,21 @@ for line in open("test.txt", "r", -1, "utf-8").readlines():
 	cfg.addRule(line.strip())
 
 
-print("------------------- Context Free Grammar -------------------------")
-for non_terminal, productions in cfg.Rules.items(): print( f"{non_terminal} -> { ' | '.join(productions)}")
+log("------------------- Context Free Grammar -------------------------")
+for non_terminal, productions in cfg.Rules.items(): log( f"{non_terminal} -> { ' | '.join(productions)}")
 
 cnf = cfg.CNF()
 
-print("------------------- Chomsky Normal Form --------------------------")
-for non_terminal, productions in cnf.items(): print( f"{non_terminal} -> { ' | '.join(productions)}")
+log("------------------- Chomsky Normal Form --------------------------")
+for non_terminal, productions in cnf.items(): log( f"{non_terminal} -> { ' | '.join(productions)}")
 
 run = True
 while run:
-	print("------------------- Cocke Younger Kasami -------------------------")
-	sentence = input("Oración a analizar: ")
+	log("------------------- Cocke Younger Kasami -------------------------")
+	sentence = log_input("Oración a analizar: ")
 	if sentence == "":
 		break
 	else:
-		print("La oración: " + sentence)
-		if cfg.CYK(sentence.split()): print("Pertenece a la gramática")
-		else: print("NO pertenece a la gramática")
+		log("La oración: " + sentence)
+		if cfg.CYK(sentence.split()): log("Pertenece a la gramática")
+		else: log("NO pertenece a la gramática")
