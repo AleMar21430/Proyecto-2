@@ -1,13 +1,12 @@
-S -> A
-S -> C
-A -> aA
-A -> a
-A -> A
-B -> bC
-B -> c
-B -> ε
-B -> b
-B -> C
-C -> cC
-C -> c
-C -> C
+E -> T X | F Y | L Z | id
+X -> P W | P T
+T -> FY | L Z | id
+Y -> MV | M F
+F -> L Z | id
+Z -> E R
+W -> T X
+V -> F Y
+L -> (
+R -> )
+P -> +
+M -> *
