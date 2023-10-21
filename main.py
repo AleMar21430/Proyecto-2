@@ -21,10 +21,27 @@ class Grammar :
 			elif c != '|' and c != '-' and c != '>' : parse += c
 		if parse != "" : self.nonTerminals[name].append(parse)
 
+	def find_nullable_variables(self):
+		nullable = set()
+		changed = True
+
+		while changed:
+			changed = False
+			for variable, productions in self.nonTerminals.items():
+				if variable in nullable:
+					continue
+
+				for production in productions:
+					if all(symbol in nullable for symbol in production):
+						nullable.add(variable)
+						changed = True
+
+		return list(nullable)
+
 	def remove_useless_productions(self):
 		# Step 1: Identify reachable non-terminals
 		reachable_nonterminals = set()
-		pending = ['S']
+		pending = [next(iter(self.nonTerminals.keys()))]
 
 		while pending:
 			current = pending.pop()
@@ -52,14 +69,11 @@ class Grammar :
 
 		first_item = next(iter(self.nonTerminals.items()))
 		new_cfg = {first_item[0]: first_item[1], **new_cfg}
-		self.nonTerminals = new_cfg
+		return new_cfg
 
 	def remove_epsilon_productions(self):
 		# Step 1: Find nullable variables
-		nullable = set()
-		for variable, productions in self.nonTerminals.items():
-			if '' or 'ε' in productions:
-				nullable.add(variable)
+		nullable = self.find_nullable_variables()
 
 		# Step 2: Remove productions containing nullable variables
 		new_cfg = self.nonTerminals.copy()
@@ -82,24 +96,19 @@ class Grammar :
 
 		# Remove empty productions
 		for variable, productions in new_cfg.items():
-			new_cfg[variable] = [p for p in productions if p != '']
+			new_cfg[variable] = [p for p in productions if p != 'ε']
+			new_cfg[variable] = [item for item in new_cfg[variable] if item.strip() != ""]
 
-		self.nonTerminals = new_cfg
+		return new_cfg
 
 	def toCNF(self):
-		self.remove_useless_productions()
-		#self.remove_epsilon_productions()
+		self.nonTerminals = self.remove_useless_productions()
+		self.nonTerminals = self.remove_epsilon_productions()
 		return self.nonTerminals
-
-# MAIN
-def cfg_to_cnf(cfg: Grammar):
-	cfg = cfg.remove_useless_productions()  # CORRECT
-	cfg = cfg.remove_epsilon_productions()  # TODO: does not eliminate ε, removes AB BC
-	return cfg
 
 cfg = Grammar()
 for line in open("test.txt", "r", -1, "utf-8").readlines():
-	cfg.addRule(line)
+	cfg.addRule(line.strip())
 
 #src: https://www.geeksforgeeks.org/simplifying-context-free-grammars/
 #src: https://www.geeksforgeeks.org/converting-context-free-grammar-chomsky-normal-form/
@@ -108,5 +117,5 @@ cnf_grammar = cfg.toCNF()
 lines = []
 for non_terminal, productions in cnf_grammar.items():
 	line = f"{non_terminal} -> { ' | '.join(productions)}"
-	print(line, end="")
+	print(line)
 	lines.append(f"{line}\n")
