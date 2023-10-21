@@ -1,48 +1,49 @@
 ------------------- Context Free Grammar -------------------------
-S -> ABCd
-A -> BC
-B -> bB | ε
-C -> cC | ε
-E -> e
+S -> NP | VP
+VP -> cooks | drinks | eats | cuts
+PP -> P | NP
+NP -> it | she
+V -> cooks | drinks | eats | cuts
+P -> in | with
+N -> fork | knife | oven | spoon
+Det -> a | the
 ------------------- Remove Start Symbol --------------------------
-S -> ABCd
-A -> BC
-B -> bB | ε
-C -> cC | ε
-E -> e
+S -> NP | VP
+VP -> cooks | drinks | eats | cuts
+PP -> P | NP
+NP -> it | she
+V -> cooks | drinks | eats | cuts
+P -> in | with
+N -> fork | knife | oven | spoon
+Det -> a | the
 ------------------- Remove Useless Productions -------------------
-S -> ABCd
-A -> BC
-B -> bB | ε
-C -> cC | ε
+S -> NP | VP
+V -> cooks | drinks | eats | cuts
+P -> in | with
+N -> fork | knife | oven | spoon
 ------------------- Remove Epsilon Productions -------------------
-S -> ABCd | ABd | ACd | Ad | BCd | Bd | Cd | d
-A -> BC | CB
-B -> b | bB
-C -> c | cC
+S -> PV | VP
+V -> c | cs | ct | cts | cu | cus | cut | cuts | s | t | ts | u | us | ut | uts
+P -> h | i | ih | it | ith | t | th | w | wh | wi | wih | wit | with | wt | wth
+N -> n | o | o | on | on | oo | oon | p | pn | po | po | pon | pon | poo | poon | s | sn | so | so | son | son | soo | soon | sp | spn | spo | spo | spon | spon | spoo | spoon
 ------------------- Remove Unit Productions ----------------------
-S -> ABCd | ABd | ACd | Ad | BCd | Bd | Cd | d
-A -> BC | CB
-B -> b | bB
-C -> c | cC
+S -> PV | VP
+V -> c | cs | ct | cts | cu | cus | cut | cuts | s | t | ts | u | us | ut | uts
+P -> h | i | ih | it | ith | t | th | w | wh | wi | wih | wit | with | wt | wth
+N -> n | o | o | on | on | oo | oon | p | pn | po | po | pon | pon | poo | poon | s | sn | so | so | son | son | soo | soon | sp | spn | spo | spo | spon | spon | spoo | spoon
 ------------------- Remove Terminals -----------------------------
-S -> ABCd | ABd | ACd | Ad | BCd | Bd | Cd | d
-A -> BC | CB
-B -> b | bB
-C -> c | cC
+S -> PV | VP
+V -> c | cs | ct | cts | cu | cus | cut | cuts | s | t | ts | u | us | ut | uts
+P -> h | i | ih | it | ith | t | th | w | wh | wi | wih | wit | with | wt | wth
+N -> n | o | o | on | on | oo | oon | p | pn | po | po | pon | pon | poo | poon | s | sn | so | so | son | son | soo | soon | sp | spn | spo | spo | spon | spon | spoo | spoon
 ------------------- Remove Duplicates ----------------------------
-S -> ABCd | ABd | ACd | Ad | BCd | Bd | Cd | d
-A -> BC | CB
-B -> b | bB
-C -> c | cC
+S -> PV | VP
+V -> c | cs | ct | cts | cu | cus | cut | cuts | s | t | ts | u | us | ut | uts
+P -> h | i | ih | it | ith | t | th | w | wh | wi | wih | wit | with | wt | wth
+N -> n | o | o | on | on | oo | oon | p | pn | po | po | pon | pon | poo | poon | s | sn | so | so | son | son | soo | soon | sp | spn | spo | spo | spon | spon | spoo | spoon
 ------------------- Chomsky Normal Form --------------------------
-S -> ABCd | ABd | ACd | Ad | BCd | Bd | Cd | d
-A -> BC | CB
-B -> b | bB
-C -> c | cC
+S -> PV | VP
+V -> c | cs | ct | cts | cu | cus | cut | cuts | s | t | ts | u | us | ut | uts
+P -> h | i | ih | it | ith | t | th | w | wh | wi | wih | wit | with | wt | wth
+N -> n | o | o | on | on | oo | oon | p | pn | po | po | pon | pon | poo | poon | s | sn | so | so | son | son | soo | soon | sp | spn | spo | spo | spon | spon | spoo | spoon
 ------------------- Cocke Younger Kasami -------------------------
-Oración a analizar: 123
-La oración: 123
-NO pertenece a la gramática
-------------------- Cocke Younger Kasami -------------------------
-Oración a analizar: 

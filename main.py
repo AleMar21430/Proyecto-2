@@ -1,41 +1,32 @@
 from typing import Dict, List
 import itertools, string, os
 
-open("log.txt", "w", -1, "utf-8").write("")
+#open("log.txt", "w", -1, "utf-8").write("")
 
 def log(val: str):
 	print(val)
-	open("log.txt", "a", -1, "utf-8").write(val + "\n")
+	#open("log.txt", "a", -1, "utf-8").write(val + "\n")
 
 def log_input(val: str):
 	question = val
 	val = input(val)
-	open("log.txt", "a", -1, "utf-8").write(question + val + "\n")
+	#open("log.txt", "a", -1, "utf-8").write(question + val + "\n")
 	return val
 
 class Grammar :
 	Rules: Dict[str,List[str]] = {}
 
-	def addRule(self, rule) :
-		nt = False
-		parse = ""
-		name = ""
-		for i in range(len(rule)) :
-			c = rule[i]
-			if c == ' ' :
-				if not nt :
-					self.Rules[parse] = []
-					name = parse
-					nt = True
-					parse = ""
-				elif parse != "" :
-					self.Rules[name].append(parse)
-					parse = ""
-			elif c != '|' and c != '-' and c != '>' : parse += c
-		if parse != "" : self.Rules[name].append(parse)
+	def addRule(self, rule: str) :
+		name = rule.split("->")[0].strip()
+		if self.Rules.get(name) is None:
+			self.Rules[name] = []
+		for rhs in rule.split("->")[1].split("|"):
+			self.Rules[name].append(rhs.strip())
 
 	def remove_start_symbol(self) -> Dict[str, List[str]]:
-		new_cfg = self.Rules.copy()
+		new_cfg = {}
+		new_cfg["S0"] = [next(iter(self.Rules.keys()))] # if starts with S
+		new_cfg = {**new_cfg, **self.Rules}
 		return new_cfg
 
 	def remove_useless_productions(self) -> Dict[str, List[str]]:
@@ -45,11 +36,16 @@ class Grammar :
 
 		while pending:
 			current = pending.pop()
+			print(current)
 			for production in self.Rules[current]:
-				for symbol in production:
-					if symbol.isupper() and symbol not in reachable_nonterminals:
-						reachable_nonterminals.add(symbol)
-						pending.append(symbol)
+				for product in production.split():
+					for symbol in product:
+						if symbol.isupper() and symbol  in reachable_nonterminals:
+							reachable_nonterminals.add(symbol)
+							pending.append(symbol)
+					if product.isupper() and product not in reachable_nonterminals:
+						reachable_nonterminals.add(product)
+						pending.append(product)
 
 		# Step 2: Identify reachable productions
 		new_cfg = {}
@@ -57,8 +53,9 @@ class Grammar :
 			if nonterminal in reachable_nonterminals:
 				new_productions = []
 				for production in productions:
-					if all(symbol in reachable_nonterminals or not symbol.isupper() for symbol in production):
-						new_productions.append(production)
+					for product in production.split():
+						if all(symbol in reachable_nonterminals or not symbol.isupper() for symbol in product):
+							new_productions.append(product)
 				if new_productions:
 					new_cfg[nonterminal] = new_productions
 
@@ -107,11 +104,7 @@ class Grammar :
 				lowercase_letters = set(string.ascii_lowercase)
 				input_set = set(production)
 
-				if not lowercase_letters.intersection(input_set):
-				# If there are no lowercase letters
-					combinations = [''.join(comb) for comb in itertools.permutations(production)]
-					new_cfg[variable] = combinations
-				else:
+				if any(c.islower() for c in input_set) and any(c.isupper() for c in input_set):
 					combinations = []
 					new_cfg[variable] = []
 					for comb_length in range(1, len(production) + 1):
@@ -119,6 +112,12 @@ class Grammar :
 					for combo in combinations:
 						if lowercase_letters.intersection(combo):
 							new_cfg[variable].append(''.join(combo))
+				elif all(c.isupper() for c in input_set):
+					# If there are only uppercase letters
+					new_cfg[variable] = productions
+				elif all(c.islower() for c in input_set):
+					# If there are only lowercase letters
+					new_cfg[variable] = productions
 				new_cfg[variable].sort()
 		return new_cfg
 
@@ -138,7 +137,7 @@ class Grammar :
 		# page 1: https://www.geeksforgeeks.org/simplifying-context-free-grammars/
 		# page 2: https://www.geeksforgeeks.org/converting-context-free-grammar-chomsky-normal-form/
 
-		self.Rules = start_sym  = self.remove_start_symbol()        # TODO  step 1 page 2
+		self.Rules = start_sym  = self.remove_start_symbol()        # Done  step 1 page 2
 
 		self.Rules = useless    = self.remove_useless_productions() # Done  step 1 page 1 \
 		self.Rules = epsilon    = self.remove_epsilon_productions() # Done? step 2 page 1  } step 2 page 2
@@ -154,12 +153,12 @@ class Grammar :
 		for non_terminal, productions in useless.items()   : log( f"{non_terminal} -> { ' | '.join(productions)}")
 		log("------------------- Remove Epsilon Productions -------------------")
 		for non_terminal, productions in epsilon.items()   : log( f"{non_terminal} -> { ' | '.join(productions)}")
-		log("------------------- Remove Unit Productions ----------------------")
-		for non_terminal, productions in unit_prod.items() : log( f"{non_terminal} -> { ' | '.join(productions)}")
-		log("------------------- Remove Terminals -----------------------------")
-		for non_terminal, productions in terminals.items() : log( f"{non_terminal} -> { ' | '.join(productions)}")
-		log("------------------- Remove Duplicates ----------------------------")
-		for non_terminal, productions in duplicates.items(): log( f"{non_terminal} -> { ' | '.join(productions)}")
+		#log("------------------- Remove Unit Productions ----------------------")
+		#for non_terminal, productions in unit_prod.items() : log( f"{non_terminal} -> { ' | '.join(productions)}")
+		#log("------------------- Remove Terminals -----------------------------")
+		#for non_terminal, productions in terminals.items() : log( f"{non_terminal} -> { ' | '.join(productions)}")
+		#log("------------------- Remove Duplicates ----------------------------")
+		#for non_terminal, productions in duplicates.items(): log( f"{non_terminal} -> { ' | '.join(productions)}")
 
 
 		return self.Rules
@@ -184,7 +183,7 @@ class Grammar :
 		else: return False
 
 cfg = Grammar()
-for line in open("test.txt", "r", -1, "utf-8").readlines():
+for line in open("cfg.txt", "r", -1, "utf-8").readlines():
 	cfg.addRule(line.strip())
 
 
@@ -193,10 +192,10 @@ for non_terminal, productions in cfg.Rules.items(): log( f"{non_terminal} -> { '
 
 cnf = cfg.CNF()
 
-log("------------------- Chomsky Normal Form --------------------------")
-for non_terminal, productions in cnf.items(): log( f"{non_terminal} -> { ' | '.join(productions)}")
+#log("------------------- Chomsky Normal Form --------------------------")
+#for non_terminal, productions in cnf.items(): log( f"{non_terminal} -> { ' | '.join(productions)}")
 
-run = True
+run = False
 while run:
 	log("------------------- Cocke Younger Kasami -------------------------")
 	sentence = log_input("Oración a analizar: ")
