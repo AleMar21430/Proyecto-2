@@ -1,6 +1,5 @@
 from typing import Dict, List
-import itertools
-import string
+import itertools, string, os
 
 open("log.txt", "w", -1, "utf-8").write("")
 
@@ -202,6 +201,7 @@ while run:
 	log("------------------- Cocke Younger Kasami -------------------------")
 	sentence = log_input("Oración a analizar: ")
 	if sentence == "":
+		os.startfile("log.txt")
 		break
 	else:
 		log("La oración: " + sentence)
