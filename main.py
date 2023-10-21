@@ -1,4 +1,6 @@
 from typing import Dict, List
+import itertools
+import string
 
 class Grammar :
 	nonTerminals: Dict[str,List[str]] = {}
@@ -81,29 +83,40 @@ class Grammar :
 			updated_productions = [p for p in productions if all(s not in nullable for s in p)]
 			new_cfg[variable] = updated_productions
 
-		# Step 3: Update other productions
-		for variable, productions in self.nonTerminals.items():
-			for i in range(len(productions)):
-				for j in range(1, len(productions[i]) + 1):
-					# Try to find nullable variables
-					for k in range(j):
-						prefix = productions[i][:k]
-						suffix = productions[i][k + 1:]
-						if all(s not in nullable for s in prefix) and all(s not in nullable for s in suffix):
-							updated_production = prefix + suffix
-							if updated_production not in new_cfg[variable]:
-								new_cfg[variable].append(updated_production)
-
-		# Remove empty productions
+		# Step 3: Remove empty productions
 		for variable, productions in new_cfg.items():
 			new_cfg[variable] = [p for p in productions if p != 'ε']
 			new_cfg[variable] = [item for item in new_cfg[variable] if item.strip() != ""]
 
+		# Step 4: Update other productions
+		for variable, productions in new_cfg.items():
+			combinations = []
+			for production in productions:
+				lowercase_letters = set(string.ascii_lowercase)
+				input_set = set(production)
+
+				if not lowercase_letters.intersection(input_set):
+				# If there are no lowercase letters
+					combinations = [''.join(comb) for comb in itertools.permutations(production)]
+					new_cfg[variable] = combinations
+				else:
+					combinations = []
+					new_cfg[variable] = []
+					for comb_length in range(1, len(production) + 1):
+						combinations.extend(itertools.combinations(production, comb_length))
+					for combo in combinations:
+						if lowercase_letters.intersection(combo):
+							new_cfg[variable].append(''.join(combo))
+				new_cfg[variable].sort()
 		return new_cfg
 
 	def toCNF(self):
-		self.nonTerminals = self.remove_useless_productions()
-		self.nonTerminals = self.remove_epsilon_productions()
+		self.nonTerminals = self.remove_useless_productions() # Done
+		self.nonTerminals = self.remove_epsilon_productions() # Done?
+		self.nonTerminals = self.remove_useless_productions() # TODO
+		self.nonTerminals = self.remove_useless_productions() # TODO
+		self.nonTerminals = self.remove_useless_productions() # TODO
+		self.nonTerminals = self.remove_useless_productions() # TODO
 		return self.nonTerminals
 
 cfg = Grammar()
