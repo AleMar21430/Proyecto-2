@@ -33,7 +33,6 @@ class Grammar :
 
 	def remove_terminals(self) -> Dict[str, List[str]]:
 		new_cfg = self.Rules.copy()
-		# Initialize a counter for creating unique non-terminal symbols
 		lhs_counter = 0
 
 		# Iterate through each production rule
@@ -72,12 +71,9 @@ class Grammar :
 						if symbol.islower() and symbol in reachable_rhs:
 							reachable_rhs.add(symbol)
 							pending.append(symbol)
-							print(symbol)
 					if product.isupper() and product not in reachable_rhs:
 						reachable_rhs.add(product)
 						pending.append(product)
-
-		print(reachable_rhs)
 
 		# Step 2: Identify reachable productions
 		new_cfg = {}
@@ -202,17 +198,20 @@ class Grammar :
 		log("------------------- Context Free Grammar -------------------------")
 		for lhs, rhs in self.Rules.items(): log( f"{lhs} -> { ' | '.join(rhs)}")
 
-		self.Rules = self.remove_start_symbol()        # Done  step 1 page 2
+		# Simplificacion
 
 		#self.Rules                                    # TODO  try splitting uppercase terms
 
+		self.Rules = self.remove_epsilon_productions() # Done  step 2 page 1  \
+		self.Rules = self.remove_unit_productions()    # TODO  step 3 page 1   } step 2 page 2
+		self.Rules = self.remove_useless_productions() # Done  step 1 page 1  /
+
+		# Conversion
+
 		self.Rules = self.remove_terminals()           # Done~ step 3 page 2           TODO creates but does not replace, use test.txt
-
-		self.Rules = self.remove_useless_productions() # Done  step 1 page 1 \
-		self.Rules = self.remove_epsilon_productions() # Done  step 2 page 1  } step 2 page 2
-		self.Rules = self.remove_unit_productions()    # TODO  step 3 page 1 /
-
 		self.Rules = self.remove_duplicate_symbols()   # TODO  step 4 page 2
+
+		self.Rules = self.remove_start_symbol()        # Done  step 1 page 2
 
 		log("------------------- Chomsky Normal Form --------------------------")
 		for lhs, rhs in self.Rules.items(): log( f"{lhs} -> { ' | '.join(rhs)}")
@@ -236,7 +235,7 @@ class Grammar :
 		else: return False
 
 cfg = Grammar()
-for line in open("cfg.txt", "r", -1, "utf-8").readlines(): # ALL SYMBOlS MUST BE UPPERCASE
+for line in open("example.txt", "r", -1, "utf-8").readlines(): # ALL SYMBOlS MUST BE UPPERCASE
 	cfg.addRule(line.strip())
 cnf = cfg.CNF()
 run = False
