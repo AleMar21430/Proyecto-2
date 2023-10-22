@@ -1,16 +1,14 @@
 from typing import Dict, List
-import itertools, string, os
-
-#open("log.txt", "w", -1, "utf-8").write("")
-
+import os
+global Release
+Release = False
 def log(val: str):
 	print(val)
-	#open("log.txt", "a", -1, "utf-8").write(val + "\n")
-
+	if Release: open("log.txt", "a", -1, "utf-8").write(str(val) + "\n")
 def log_input(val: str):
 	question = val
 	val = input(val)
-	#open("log.txt", "a", -1, "utf-8").write(question + val + "\n")
+	if Release: open("log.txt", "a", -1, "utf-8").write(question + val + "\n")
 	return val
 
 class Grammar :
@@ -51,7 +49,8 @@ class Grammar :
 						changed = True
 		nullable = list(nullable)
 		log("------------------- Nullable Symbols -----------------------------")
-		log(nullable)
+		if len(nullable) == 0: log("No Nullable Symbols")
+		else: log(nullable)
 
 		# Step 2: Remove rhs containing nullable variables
 		new_cfg = self.Rules.copy()
@@ -76,7 +75,7 @@ class Grammar :
 		unit_productions = self.Rules.copy()
 		new_cfg: Dict[str, List[str]] = {}
 
-		# Separate unit and non-unit productions
+		# Step 1: Separate unit and non-unit productions
 		for non_terminal in self.Rules:
 			unit_productions[non_terminal] = []
 			new_cfg[non_terminal] = []
@@ -86,9 +85,13 @@ class Grammar :
 				else:
 					new_cfg[non_terminal].append(production)
 		log("------------------- Unit Productions -----------------------------")
-		log(unit_productions)
+		no_unit_prod = True
+		for lhs, rhs in unit_productions.items() :
+			if rhs != []: log( f"{lhs} -> { ' | '.join(rhs)}")
+			else : no_unit_prod = False
+		if not no_unit_prod: log("No Unit Productions")
 
-		# Find all reachable non-terminals for each non-terminal
+		# Step 2: Find all reachable non-terminals for each non-terminal
 		for _ in range(len(self.Rules)):
 			for non_terminal in self.Rules:
 				new_units = []
@@ -97,7 +100,7 @@ class Grammar :
 				unit_productions[non_terminal].extend(new_units)
 				unit_productions[non_terminal] = list(set(unit_productions[non_terminal]))
 
-		# Add all reachable productions to each non-terminal
+		# Step 3: Add all reachable productions to each non-terminal
 		for non_terminal in self.Rules:
 			new_productions = []
 			for unit in unit_productions[non_terminal]:
@@ -126,6 +129,7 @@ class Grammar :
 							if product not in reachable_rhs:
 								reachable_rhs.add(product)
 								pending.append(product)
+
 		# Step 2: Identify reachable productions
 		new_cfg = {}
 		for nonterminal, productions in self.Rules.items():
@@ -141,9 +145,15 @@ class Grammar :
 				new_cfg[nonterminal] = new_productions
 
 		# Step 3: Remove unused non-terminals
+		log("------------------- Useless Productions --------------------------")
+		useless = []
 		for lhs in self.Rules.keys():
 			if lhs not in reachable_rhs:
+				if lhs == next(iter(self.Rules.items())): useless.append(lhs)
 				new_cfg.pop(lhs, None)
+
+		if len(useless) == 0: log("No Useless Productions")
+		else: log(useless)
 
 		first_item = next(iter(self.Rules.items()))
 		new_cfg = {first_item[0]: first_item[1], **new_cfg}
@@ -209,35 +219,42 @@ class Grammar :
 		for lhs, rhs in self.Rules.items(): log( f"{lhs} -> { ' | '.join(rhs)}")
 		return self.Rules
 
-	def CYK(self, words: List[str]) -> bool:
+	def CYK(self, words: List[str]):
 		cyk = {}
 		for lhs, rhs in self.Rules.items():
 			cyk[lhs] = [production.split() for production in rhs]
-		log("------------------- Cocke Younger Kasami -------------------------")
+		log("------------------- CYK Internal Dict ----------------------------")
 		for lhs, rhs in cyk.items(): log( f"{lhs} -> {rhs}")
 
 		word_count = len(words)
-		T = [[set([]) for j in range(word_count)] for i in range(word_count)]
+		Parse_Tree = [[set([]) for j in range(word_count)] for i in range(word_count)]
 	
 		for i in range(0, word_count):
 			for lhs, rhs in cyk.items():
 				for production in rhs:
 					if len(production) == 1:
 						if production[0] == words[i]:
-							T[i][i].add(lhs)
+							Parse_Tree[i][i].add(lhs)
 			for j in range(i, -1, -1):
 				for k in range(j, i + 1):
 					for lhs, rhs in cyk.items():
 						for production in rhs:
 							if len(production) == 2:
 								try:
-									if production[0] in T[j][k]:
-										if production[1] in T[k + 1][i]:
-											T[j][i].add(lhs)
+									if production[0] in Parse_Tree[j][k]:
+										if production[1] in Parse_Tree[k + 1][i]:
+											Parse_Tree[j][i].add(lhs)
 								except: pass
 
-		if len(T[0][word_count-1]) != 0: return True
-		else: return False
+		log("------------------- Cocke Younger Kasami Result ------------------")
+		if len(Parse_Tree[0][word_count-1]) != 0:
+			log(f"La oración || {' '.join(words)} || **SI** pertenece a la gramática")
+		else:
+			log(f"La oración || {' '.join(words)} || **NO** pertenece a la gramática")
+		log("------------------------------------------------------------------")
+
+Release = False
+if Release: open("log.txt", "w", -1, "utf-8").write("")
 
 cfg = Grammar()
 for line in open("cfg.txt", "r", -1, "utf-8").readlines():
@@ -257,6 +274,5 @@ sentence = "a dog cooks with a cat"
 # a dog cooks with NP = a dog cooks with DET N
 # a dog cooks with DET N = a dog cooks with a cat
 
-if cfg.CYK(sentence.split()): log("La oración pertenece a la gramática")
-else: log("La oración **NO** pertenece a la gramática")
-#os.startfile("log.txt")
+cfg.CYK(sentence.split())
+if Release: os.startfile("log.txt")

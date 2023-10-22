@@ -1,49 +1,84 @@
 ------------------- Context Free Grammar -------------------------
-S -> NP | VP
-VP -> cooks | drinks | eats | cuts
-PP -> P | NP
-NP -> it | she
+S -> NP VP
+VP -> VP PP | V NP | cooks | drinks | eats | cuts
+PP -> P NP
+NP -> Det N | it | she
 V -> cooks | drinks | eats | cuts
 P -> in | with
-N -> fork | knife | oven | spoon
+N -> cat | dog | beer | cake | juice | meat | soup | fork | knife | oven | spoon
 Det -> a | the
-------------------- Remove Start Symbol --------------------------
-S -> NP | VP
-VP -> cooks | drinks | eats | cuts
-PP -> P | NP
-NP -> it | she
-V -> cooks | drinks | eats | cuts
-P -> in | with
-N -> fork | knife | oven | spoon
-Det -> a | the
-------------------- Remove Useless Productions -------------------
-S -> NP | VP
-V -> cooks | drinks | eats | cuts
-P -> in | with
-N -> fork | knife | oven | spoon
+------------------- Nullable Symbols -----------------------------
+No Nullable Symbols
 ------------------- Remove Epsilon Productions -------------------
-S -> PV | VP
-V -> c | cs | ct | cts | cu | cus | cut | cuts | s | t | ts | u | us | ut | uts
-P -> h | i | ih | it | ith | t | th | w | wh | wi | wih | wit | with | wt | wth
-N -> n | o | o | on | on | oo | oon | p | pn | po | po | pon | pon | poo | poon | s | sn | so | so | son | son | soo | soon | sp | spn | spo | spo | spon | spon | spoo | spoon
+S -> NP VP
+VP -> VP PP | V NP | cooks | drinks | eats | cuts
+PP -> P NP
+NP -> Det N | it | she
+V -> cooks | drinks | eats | cuts
+P -> in | with
+N -> cat | dog | beer | cake | juice | meat | soup | fork | knife | oven | spoon
+Det -> a | the
+------------------- Unit Productions -----------------------------
+No Unit Productions
 ------------------- Remove Unit Productions ----------------------
-S -> PV | VP
-V -> c | cs | ct | cts | cu | cus | cut | cuts | s | t | ts | u | us | ut | uts
-P -> h | i | ih | it | ith | t | th | w | wh | wi | wih | wit | with | wt | wth
-N -> n | o | o | on | on | oo | oon | p | pn | po | po | pon | pon | poo | poon | s | sn | so | so | son | son | soo | soon | sp | spn | spo | spo | spon | spon | spoo | spoon
-------------------- Remove Terminals -----------------------------
-S -> PV | VP
-V -> c | cs | ct | cts | cu | cus | cut | cuts | s | t | ts | u | us | ut | uts
-P -> h | i | ih | it | ith | t | th | w | wh | wi | wih | wit | with | wt | wth
-N -> n | o | o | on | on | oo | oon | p | pn | po | po | pon | pon | poo | poon | s | sn | so | so | son | son | soo | soon | sp | spn | spo | spo | spon | spon | spoo | spoon
+S -> NP VP
+VP -> cuts | VP PP | eats | cooks | drinks | V NP
+PP -> P NP
+NP -> Det N | it | she
+V -> eats | cooks | drinks | cuts
+P -> with | in
+N -> spoon | knife | fork | cat | juice | beer | meat | oven | soup | dog | cake
+Det -> the | a
+------------------- Useless Productions --------------------------
+No Useless Productions
+------------------- Remove Useless Productions -------------------
+S -> NP VP
+VP -> cuts | VP PP | eats | cooks | drinks | V NP
+PP -> P NP
+NP -> Det N | it | she
+V -> eats | cooks | drinks | cuts
+P -> with | in
+N -> spoon | knife | fork | cat | juice | beer | meat | oven | soup | dog | cake
+Det -> the | a
 ------------------- Remove Duplicates ----------------------------
-S -> PV | VP
-V -> c | cs | ct | cts | cu | cus | cut | cuts | s | t | ts | u | us | ut | uts
-P -> h | i | ih | it | ith | t | th | w | wh | wi | wih | wit | with | wt | wth
-N -> n | o | o | on | on | oo | oon | p | pn | po | po | pon | pon | poo | poon | s | sn | so | so | son | son | soo | soon | sp | spn | spo | spo | spon | spon | spoo | spoon
+S -> NP VP
+VP -> cuts | VP PP | eats | cooks | drinks | V NP
+PP -> P NP
+NP -> Det N | it | she
+V -> eats | cooks | drinks | cuts
+P -> with | in
+N -> spoon | knife | fork | cat | juice | beer | meat | oven | soup | dog | cake
+Det -> the | a
+------------------- Remove Start Symbol --------------------------
+S0 -> S
+S -> NP VP
+VP -> cuts | VP PP | eats | cooks | drinks | V NP
+PP -> P NP
+NP -> Det N | it | she
+V -> eats | cooks | drinks | cuts
+P -> with | in
+N -> spoon | knife | fork | cat | juice | beer | meat | oven | soup | dog | cake
+Det -> the | a
 ------------------- Chomsky Normal Form --------------------------
-S -> PV | VP
-V -> c | cs | ct | cts | cu | cus | cut | cuts | s | t | ts | u | us | ut | uts
-P -> h | i | ih | it | ith | t | th | w | wh | wi | wih | wit | with | wt | wth
-N -> n | o | o | on | on | oo | oon | p | pn | po | po | pon | pon | poo | poon | s | sn | so | so | son | son | soo | soon | sp | spn | spo | spo | spon | spon | spoo | spoon
-------------------- Cocke Younger Kasami -------------------------
+S0 -> S
+S -> NP VP
+VP -> cuts | VP PP | eats | cooks | drinks | V NP
+PP -> P NP
+NP -> Det N | it | she
+V -> eats | cooks | drinks | cuts
+P -> with | in
+N -> spoon | knife | fork | cat | juice | beer | meat | oven | soup | dog | cake
+Det -> the | a
+------------------- CYK Internal Dict ----------------------------
+S0 -> [['S']]
+S -> [['NP', 'VP']]
+VP -> [['cuts'], ['VP', 'PP'], ['eats'], ['cooks'], ['drinks'], ['V', 'NP']]
+PP -> [['P', 'NP']]
+NP -> [['Det', 'N'], ['it'], ['she']]
+V -> [['eats'], ['cooks'], ['drinks'], ['cuts']]
+P -> [['with'], ['in']]
+N -> [['spoon'], ['knife'], ['fork'], ['cat'], ['juice'], ['beer'], ['meat'], ['oven'], ['soup'], ['dog'], ['cake']]
+Det -> [['the'], ['a']]
+------------------- Cocke Younger Kasami Result ------------------
+La oración || a dog cooks with a cat || **SI** pertenece a la gramática
+------------------------------------------------------------------
