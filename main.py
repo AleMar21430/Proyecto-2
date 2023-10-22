@@ -74,7 +74,7 @@ class Grammar :
 
 	def remove_unit_productions(self) -> Dict[str, List[str]]:
 		unit_productions = self.Rules.copy()
-		new_cfg = {}
+		new_cfg: Dict[str, List[str]] = {}
 
 		# Separate unit and non-unit productions
 		for non_terminal in self.Rules:
@@ -118,12 +118,14 @@ class Grammar :
 				for production in self.Rules[current]:
 					for product in production.split():
 						for symbol in product:
-							if symbol.islower() and symbol in reachable_rhs:
-								reachable_rhs.add(symbol)
-								pending.append(symbol)
-						if (product.isupper() or product in self.Nonterminals) and product not in reachable_rhs:
-							reachable_rhs.add(product)
-							pending.append(product)
+							if symbol.islower():
+								if symbol in reachable_rhs:
+									reachable_rhs.add(symbol)
+									pending.append(symbol)
+						if product.isupper() or product in self.Nonterminals:
+							if product not in reachable_rhs:
+								reachable_rhs.add(product)
+								pending.append(product)
 		# Step 2: Identify reachable productions
 		new_cfg = {}
 		for nonterminal, productions in self.Rules.items():
@@ -199,7 +201,7 @@ class Grammar :
 
 		# Conversion
 
-		#self.Rules = self.remove_terminals()           # TODO step 3 page 2           TODO creates but does not replace, use test.txt
+		#self.Rules = self.remove_terminals()          # TODO step 3 page 2           TODO creates but does not replace, use test.txt
 		self.Rules = self.remove_duplicate_symbols()   # TODO  step 4 page 2
 		self.Rules = self.remove_start_symbol()        # Done  step 1 page 2
 
@@ -220,24 +222,31 @@ class Grammar :
 		for i in range(0, word_count):
 			for lhs, rhs in cyk.items():
 				for production in rhs:
-					if len(production) == 1 and production[0] == words[i]: T[i][i].add(lhs)
+					if len(production) == 1:
+						if production[0] == words[i]:
+							T[i][i].add(lhs)
 			for j in range(i, -1, -1):
 				for k in range(j, i + 1):
 					for lhs, rhs in cyk.items():
 						for production in rhs:
-							if len(production) == 2 and production[0] in T[j][k] and production[1] in T[k + 1][i]: T[j][i].add(lhs)
+							if len(production) == 2:
+								try:
+									if production[0] in T[j][k]:
+										if production[1] in T[k + 1][i]:
+											T[j][i].add(lhs)
+								except: pass
 
 		if len(T[0][word_count-1]) != 0: return True
 		else: return False
 
 cfg = Grammar()
-for line in open("test.txt", "r", -1, "utf-8").readlines():
+for line in open("cfg.txt", "r", -1, "utf-8").readlines():
 	cfg.addRule(line.strip())
 cnf = cfg.CNF()
 
 #sentence = log_input("Oración a analizar: ")
-#sentence = "a dog cooks with a cat"
-sentence = "a very heavy orange book"
+sentence = "a dog cooks with a cat"
+#sentence = "a very heavy orange book"
 # S -> NP VP
 # NP VP = DET N VP
 # Det N VP = a dog VP
