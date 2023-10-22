@@ -157,7 +157,35 @@ class Grammar :
 		return new_cfg
 
 	def remove_unit_productions(self) -> Dict[str, List[str]]:
-		new_cfg = self.Rules.copy()
+		unit_productions = {}
+		new_cfg = {}
+
+		# Separate unit and non-unit productions
+		for non_terminal in self.Rules:
+			unit_productions[non_terminal] = []
+			new_cfg[non_terminal] = []
+			for production in self.Rules[non_terminal]:
+				if len(production) == 1 and production.isupper():
+					unit_productions[non_terminal].append(production)
+				else:
+					new_cfg[non_terminal].append(production)
+
+		# Find all reachable non-terminals for each non-terminal
+		for _ in range(len(self.Rules)):
+			for non_terminal in self.Rules:
+				new_units = []
+				for unit in unit_productions[non_terminal]:
+					new_units.extend(unit_productions[unit])
+				unit_productions[non_terminal].extend(new_units)
+				unit_productions[non_terminal] = list(set(unit_productions[non_terminal]))
+
+		# Add all reachable productions to each non-terminal
+		for non_terminal in self.Rules:
+			new_productions = []
+			for unit in unit_productions[non_terminal]:
+				new_productions.extend(new_cfg[unit])
+			new_cfg[non_terminal].extend(new_productions)
+			new_cfg[non_terminal] = list(set(new_cfg[non_terminal]))
 		log("------------------- Remove Unit Productions ----------------------")
 		for lhs, rhs in new_cfg.items() : log( f"{lhs} -> { ' | '.join(rhs)}")
 		return new_cfg
@@ -171,8 +199,13 @@ class Grammar :
 	def CNF(self) -> Dict[str, List[str]]:
 		# page 1: https://www.geeksforgeeks.org/simplifying-context-free-grammars/
 		# page 2: https://www.geeksforgeeks.org/converting-context-free-grammar-chomsky-normal-form/
+		log("------------------- Context Free Grammar -------------------------")
+		for lhs, rhs in self.Rules.items(): log( f"{lhs} -> { ' | '.join(rhs)}")
 
 		self.Rules = self.remove_start_symbol()        # Done  step 1 page 2
+
+		#self.Rules                                    # TODO  try splitting uppercase terms
+
 		self.Rules = self.remove_terminals()           # Done~ step 3 page 2           TODO creates but does not replace, use test.txt
 
 		self.Rules = self.remove_useless_productions() # Done  step 1 page 1 \
@@ -180,6 +213,9 @@ class Grammar :
 		self.Rules = self.remove_unit_productions()    # TODO  step 3 page 1 /
 
 		self.Rules = self.remove_duplicate_symbols()   # TODO  step 4 page 2
+
+		log("------------------- Chomsky Normal Form --------------------------")
+		for lhs, rhs in self.Rules.items(): log( f"{lhs} -> { ' | '.join(rhs)}")
 		return self.Rules
 
 	def CYK(self, words: List[str]) -> bool:
@@ -202,15 +238,7 @@ class Grammar :
 cfg = Grammar()
 for line in open("cfg.txt", "r", -1, "utf-8").readlines(): # ALL SYMBOlS MUST BE UPPERCASE
 	cfg.addRule(line.strip())
-
-log("------------------- Context Free Grammar -------------------------")
-for lhs, rhs in cfg.Rules.items(): log( f"{lhs} -> { ' | '.join(rhs)}")
-
 cnf = cfg.CNF()
-
-#log("------------------- Chomsky Normal Form --------------------------")
-#for lhs, rhs in cnf.items(): log( f"{lhs} -> { ' | '.join(rhs)}")
-
 run = False
 while run:
 	log("------------------- Cocke Younger Kasami -------------------------")
@@ -219,6 +247,5 @@ while run:
 		os.startfile("log.txt")
 		break
 	else:
-		log("La oración: " + sentence)
-		if cfg.CYK(sentence.split()): log("Pertenece a la gramática")
-		else: log("NO pertenece a la gramática")
+		if cfg.CYK(sentence.split()): log("La oración pertenece a la gramática")
+		else: log("La oración **NO** pertenece a la gramática")
