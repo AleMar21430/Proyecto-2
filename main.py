@@ -217,7 +217,6 @@ class Grammar :
 
 		log("------------------- Chomsky Normal Form --------------------------")
 		for lhs, rhs in self.Rules.items(): log( f"{lhs} -> { ' | '.join(rhs)}")
-		return self.Rules
 
 	def CYK(self, words: List[str]):
 		cyk = {}
@@ -253,17 +252,19 @@ class Grammar :
 			log(f"La oración || {' '.join(words)} || **NO** pertenece a la gramática")
 		log("------------------------------------------------------------------")
 
-Release = False
-if Release: open("log.txt", "w", -1, "utf-8").write("")
 
+Release = False
+Not_CNF = False
+
+if Release: open("log.txt", "w", -1, "utf-8").write("")
 cfg = Grammar()
 for line in open("cfg.txt", "r", -1, "utf-8").readlines():
 	cfg.addRule(line.strip())
-cnf = cfg.CNF()
+if Not_CNF: cfg.CNF()
+if Release: sentence = log_input("Oración a analizar: ")
+else: sentence = "a dog cooks with a cat"
+#sentence = "(id*id)+id"
 
-#sentence = log_input("Oración a analizar: ")
-sentence = "a dog cooks with a cat"
-#sentence = "a very heavy orange book"
 # S -> NP VP
 # NP VP = DET N VP
 # Det N VP = a dog VP
