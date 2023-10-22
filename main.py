@@ -1,14 +1,14 @@
 from typing import Dict, List
 import os
 global Release
-Release = False
+Logging = False
 def log(val: str):
 	print(val)
-	if Release: open("log.txt", "a", -1, "utf-8").write(str(val) + "\n")
+	if Logging: open("log.txt", "a", -1, "utf-8").write(str(val) + "\n")
 def log_input(val: str):
 	question = val
 	val = input(val)
-	if Release: open("log.txt", "a", -1, "utf-8").write(question + val + "\n")
+	if Logging: open("log.txt", "a", -1, "utf-8").write(question + val + "\n")
 	return val
 
 class Grammar :
@@ -247,22 +247,33 @@ class Grammar :
 
 		log("------------------- Cocke Younger Kasami Result ------------------")
 		if len(Parse_Tree[0][word_count-1]) != 0:
-			log(f"La oración || {' '.join(words)} || **SI** pertenece a la gramática")
+			log(f"La oración || {' '.join(words)} || SI pertenece a la gramática✅")
 		else:
-			log(f"La oración || {' '.join(words)} || **NO** pertenece a la gramática")
+			log(f"La oración || {' '.join(words)} || NO pertenece a la gramática⛔")
 		log("------------------------------------------------------------------")
 
 
-Release = False
-Not_CNF = False
+Logging = True
+Hardcoded = True
+Multicheck = True
+Convert_to_CNF = True
 
-if Release: open("log.txt", "w", -1, "utf-8").write("")
+if Logging: open("log.txt", "w", -1, "utf-8").write("")
 cfg = Grammar()
 for line in open("cfg.txt", "r", -1, "utf-8").readlines():
 	cfg.addRule(line.strip())
-if Not_CNF: cfg.CNF()
-if Release: sentence = log_input("Oración a analizar: ")
-else: sentence = "a dog cooks with a cat"
+if Convert_to_CNF: cfg.CNF()
+if Multicheck:
+	while Multicheck:
+		if Hardcoded:
+			sentence = "a dog cooks with a cat"
+			Multicheck = False
+		else:
+			sentence = log_input("Oración a analizar: ")
+			if sentence == "": Multicheck = False
+else:
+	if Hardcoded: sentence = "a dog cooks with a cat"
+	else: sentence = log_input("Oración a analizar: ")
 #sentence = "(id*id)+id"
 
 # S -> NP VP
@@ -276,4 +287,4 @@ else: sentence = "a dog cooks with a cat"
 # a dog cooks with DET N = a dog cooks with a cat
 
 cfg.CYK(sentence.split())
-if Release: os.startfile("log.txt")
+if Logging: os.startfile("log.txt")
