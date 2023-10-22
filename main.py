@@ -198,9 +198,9 @@ class Grammar :
 		log("------------------- Context Free Grammar -------------------------")
 		for lhs, rhs in self.Rules.items(): log( f"{lhs} -> { ' | '.join(rhs)}")
 
-		# Simplificacion
+		#self.Rules                                    # TODO  try splitting uppercase terms to work with test.txt
 
-		#self.Rules                                    # TODO  try splitting uppercase terms
+		# Simplificacion
 
 		self.Rules = self.remove_epsilon_productions() # Done  step 2 page 1  \
 		self.Rules = self.remove_unit_productions()    # TODO  step 3 page 1   } step 2 page 2
@@ -238,13 +238,20 @@ cfg = Grammar()
 for line in open("example.txt", "r", -1, "utf-8").readlines(): # ALL SYMBOlS MUST BE UPPERCASE
 	cfg.addRule(line.strip())
 cnf = cfg.CNF()
-run = False
-while run:
-	log("------------------- Cocke Younger Kasami -------------------------")
-	sentence = log_input("Oración a analizar: ")
-	if sentence == "":
-		os.startfile("log.txt")
-		break
-	else:
-		if cfg.CYK(sentence.split()): log("La oración pertenece a la gramática")
-		else: log("La oración **NO** pertenece a la gramática")
+
+log("------------------- Cocke Younger Kasami -------------------------")
+#sentence = log_input("Oración a analizar: ")
+sentence = "a dog cooks with a cat"
+# S -> NP VP
+# NP VP = DET N VP
+# Det N VP = a dog VP
+# a dog VP = a dog VP PP
+# a dog VP PP = a dog cooks PP
+# a dog cooks PP = a dog cooks P NP
+# a dog cooks P NP = a dog cooks with NP
+# a dog cooks with NP = a dog cooks with DET N
+# a dog cooks with DET N = a dog cooks with a cat
+
+if cfg.CYK(sentence.split()): log("La oración pertenece a la gramática")
+else: log("La oración **NO** pertenece a la gramática")
+os.startfile("log.txt")
