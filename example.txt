@@ -2,4 +2,4 @@ E -> T X
 X -> + T X | ε
 T -> F Y
 Y -> * F Y | ε
-F -> ( E ) | id
+F -> (E) | id

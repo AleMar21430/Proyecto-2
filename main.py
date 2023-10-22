@@ -14,14 +14,19 @@ def log_input(val: str):
 	return val
 
 class Grammar :
+	Nonterminals: List[str] = []
+	Terminals: List[str] = []
 	Rules: Dict[str,List[str]] = {}
 
 	def addRule(self, rule: str) :
 		name = rule.split("->")[0].strip()
+		self.Nonterminals.append(name)
 		if self.Rules.get(name) is None:
 			self.Rules[name] = []
 		for rhs in rule.split("->")[1].split("|"):
 			self.Rules[name].append(rhs.strip())
+			for term in rhs:
+				self.Terminals.append(term)
 
 	def remove_start_symbol(self) -> Dict[str, List[str]]:
 		new_cfg = {}
@@ -29,6 +34,119 @@ class Grammar :
 		new_cfg = {**new_cfg, **self.Rules}
 		log("------------------- Remove Start Symbol --------------------------")
 		for lhs, rhs in new_cfg.items() : log( f"{lhs} -> { ' | '.join(rhs)}")
+		return new_cfg
+
+	def remove_epsilon_productions(self) -> Dict[str, List[str]]:
+		# Step 1: Find nullable variables
+		nullable = set()
+		changed = True
+		while changed:
+			changed = False
+			for variable, rhs in self.Rules.items():
+				if variable in nullable:
+					continue
+				for production in rhs:
+					if all(symbol in nullable for symbol in production):
+						nullable.add(variable)
+						changed = True
+		nullable = list(nullable)
+		log("------------------- Nullable Symbols -----------------------------")
+		log(nullable)
+
+		# Step 2: Remove rhs containing nullable variables
+		new_cfg = self.Rules.copy()
+		for variable, rhs in self.Rules.items():
+			updated_rhs = [p for p in rhs if all(s not in nullable for s in p)]
+			new_cfg[variable] = updated_rhs
+
+		# Step 3: Remove empty rhs
+		for variable, rhs in new_cfg.items():
+			new_cfg[variable] = [p for p in rhs if p != 'ε']
+			new_cfg[variable] = [item for item in new_cfg[variable] if item.strip() != ""]
+
+		# Step 4: Update other rhs
+		for variable, rhs in new_cfg.items():
+			for production in rhs:
+				new_cfg[variable] = rhs
+		log("------------------- Remove Epsilon Productions -------------------")
+		for lhs, rhs in new_cfg.items()   : log( f"{lhs} -> { ' | '.join(rhs)}")
+		return new_cfg
+
+	def remove_unit_productions(self) -> Dict[str, List[str]]:
+		unit_productions = self.Rules.copy()
+		new_cfg = {}
+
+		# Separate unit and non-unit productions
+		for non_terminal in self.Rules:
+			unit_productions[non_terminal] = []
+			new_cfg[non_terminal] = []
+			for production in self.Rules[non_terminal]:
+				if len(production) == 1 and production.isupper():
+					unit_productions[non_terminal].append(production)
+				else:
+					new_cfg[non_terminal].append(production)
+		log("------------------- Unit Productions -----------------------------")
+		log(unit_productions)
+
+		# Find all reachable non-terminals for each non-terminal
+		for _ in range(len(self.Rules)):
+			for non_terminal in self.Rules:
+				new_units = []
+				for unit in unit_productions[non_terminal]:
+					new_units.extend(unit_productions[unit])
+				unit_productions[non_terminal].extend(new_units)
+				unit_productions[non_terminal] = list(set(unit_productions[non_terminal]))
+
+		# Add all reachable productions to each non-terminal
+		for non_terminal in self.Rules:
+			new_productions = []
+			for unit in unit_productions[non_terminal]:
+				new_productions.extend(new_cfg[unit])
+			new_cfg[non_terminal].extend(new_productions)
+			new_cfg[non_terminal] = list(set(new_cfg[non_terminal]))
+		log("------------------- Remove Unit Productions ----------------------")
+		for lhs, rhs in new_cfg.items() : log( f"{lhs} -> { ' | '.join(rhs)}")
+		return new_cfg
+
+	def remove_useless_productions(self) -> Dict[str, List[str]]:
+		# Step 1: Identify reachable non-terminals
+		reachable_rhs = set()
+		pending = [next(iter(self.Rules.keys()))]
+		while pending:
+			current = pending.pop()
+			if self.Rules.get(current):
+				for production in self.Rules[current]:
+					for product in production.split():
+						for symbol in product:
+							if symbol.islower() and symbol in reachable_rhs:
+								reachable_rhs.add(symbol)
+								pending.append(symbol)
+						if (product.isupper() or product in self.Nonterminals) and product not in reachable_rhs:
+							reachable_rhs.add(product)
+							pending.append(product)
+		# Step 2: Identify reachable productions
+		new_cfg = {}
+		for nonterminal, productions in self.Rules.items():
+			new_productions = []
+			for production in productions:
+				for product in production.split():
+					if product.islower():
+						new_productions.append(product)
+					if product in reachable_rhs:
+						if production not in new_productions:
+							new_productions.append(production)
+			if new_productions:
+				new_cfg[nonterminal] = new_productions
+
+		# Step 3: Remove unused non-terminals
+		for lhs in self.Rules.keys():
+			if lhs not in reachable_rhs:
+				new_cfg.pop(lhs, None)
+
+		first_item = next(iter(self.Rules.items()))
+		new_cfg = {first_item[0]: first_item[1], **new_cfg}
+		log("------------------- Remove Useless Productions -------------------")
+		for lhs, rhs in new_cfg.items()   : log( f"{lhs} -> { ' | '.join(rhs)}")
 		return new_cfg
 
 	def remove_terminals(self) -> Dict[str, List[str]]:
@@ -59,133 +177,6 @@ class Grammar :
 		for lhs, rhs in new_cfg.items() : log( f"{lhs} -> { ' | '.join(rhs)}")
 		return new_cfg
 
-	def remove_useless_productions(self) -> Dict[str, List[str]]:
-		# Step 1: Identify reachable non-terminals
-		reachable_rhs = set()
-		pending = [next(iter(self.Rules.keys()))]
-		while pending:
-			current = pending.pop()
-			for production in self.Rules[current]:
-				for product in production.split():
-					for symbol in product:
-						if symbol.islower() and symbol in reachable_rhs:
-							reachable_rhs.add(symbol)
-							pending.append(symbol)
-					if product.isupper() and product not in reachable_rhs:
-						reachable_rhs.add(product)
-						pending.append(product)
-
-		# Step 2: Identify reachable productions
-		new_cfg = {}
-		for nonterminal, productions in self.Rules.items():
-			new_productions = []
-			for production in productions:
-				for product in production.split():
-					if product.islower():
-						new_productions.append(product)
-					if product in reachable_rhs:
-						if production not in new_productions:
-							new_productions.append(production)
-			if new_productions:
-				new_cfg[nonterminal] = new_productions
-
-		# Step 3: Remove unused non-terminals
-		for lhs in self.Rules.keys():
-			if lhs not in reachable_rhs:
-				new_cfg.pop(lhs, None)
-
-		first_item = next(iter(self.Rules.items()))
-		new_cfg = {first_item[0]: first_item[1], **new_cfg}
-		log("------------------- Remove Useless Productions -------------------")
-		for lhs, rhs in new_cfg.items()   : log( f"{lhs} -> { ' | '.join(rhs)}")
-		return new_cfg
-
-	def remove_epsilon_productions(self) -> Dict[str, List[str]]:
-		# Step 1: Find nullable variables
-		nullable = set()
-		changed = True
-		while changed:
-			changed = False
-			for variable, rhs in self.Rules.items():
-				if variable in nullable:
-					continue
-				for production in rhs:
-					if all(symbol in nullable for symbol in production):
-						nullable.add(variable)
-						changed = True
-		nullable = list(nullable)
-
-		# Step 2: Remove rhs containing nullable variables
-		new_cfg = self.Rules.copy()
-		for variable, rhs in self.Rules.items():
-			updated_rhs = [p for p in rhs if all(s not in nullable for s in p)]
-			new_cfg[variable] = updated_rhs
-
-		# Step 3: Remove empty rhs
-		for variable, rhs in new_cfg.items():
-			new_cfg[variable] = [p for p in rhs if p != 'ε']
-			new_cfg[variable] = [item for item in new_cfg[variable] if item.strip() != ""]
-
-		# Step 4: Update other rhs
-		for variable, rhs in new_cfg.items():
-			combinations = []
-			for production in rhs:
-				lowercase_letters = set(string.ascii_lowercase)
-				input_set = set(production)
-
-				if any(c.islower() for c in input_set) and any(c.isupper() for c in input_set):
-					combinations = []
-					new_cfg[variable] = []
-					for comb_length in range(1, len(production) + 1):
-						combinations.extend(itertools.combinations(production, comb_length))
-					for combo in combinations:
-						if lowercase_letters.intersection(combo):
-							new_cfg[variable].append(''.join(combo))
-				elif all(c.isupper() for c in input_set):
-					# If there are only uppercase letters
-					new_cfg[variable] = rhs
-				elif all(c.islower() for c in input_set):
-					# If there are only lowercase letters
-					new_cfg[variable] = rhs
-				new_cfg[variable].sort()
-		log("------------------- Remove Epsilon Productions -------------------")
-		for lhs, rhs in new_cfg.items()   : log( f"{lhs} -> { ' | '.join(rhs)}")
-		return new_cfg
-
-	def remove_unit_productions(self) -> Dict[str, List[str]]:
-		unit_productions = {}
-		new_cfg = {}
-
-		# Separate unit and non-unit productions
-		for non_terminal in self.Rules:
-			unit_productions[non_terminal] = []
-			new_cfg[non_terminal] = []
-			for production in self.Rules[non_terminal]:
-				if len(production) == 1 and production.isupper():
-					unit_productions[non_terminal].append(production)
-				else:
-					new_cfg[non_terminal].append(production)
-
-		# Find all reachable non-terminals for each non-terminal
-		for _ in range(len(self.Rules)):
-			for non_terminal in self.Rules:
-				new_units = []
-				for unit in unit_productions[non_terminal]:
-					new_units.extend(unit_productions[unit])
-				unit_productions[non_terminal].extend(new_units)
-				unit_productions[non_terminal] = list(set(unit_productions[non_terminal]))
-
-		# Add all reachable productions to each non-terminal
-		for non_terminal in self.Rules:
-			new_productions = []
-			for unit in unit_productions[non_terminal]:
-				new_productions.extend(new_cfg[unit])
-			new_cfg[non_terminal].extend(new_productions)
-			new_cfg[non_terminal] = list(set(new_cfg[non_terminal]))
-		log("------------------- Remove Unit Productions ----------------------")
-		for lhs, rhs in new_cfg.items() : log( f"{lhs} -> { ' | '.join(rhs)}")
-		return new_cfg
-
 	def remove_duplicate_symbols(self) -> Dict[str, List[str]]:
 		new_cfg = self.Rules.copy()
 		log("------------------- Remove Duplicates ----------------------------")
@@ -202,15 +193,14 @@ class Grammar :
 
 		# Simplificacion
 
-		self.Rules = self.remove_epsilon_productions() # Done  step 2 page 1  \
+		self.Rules = self.remove_epsilon_productions() # DONE  step 2 page 1  \
 		self.Rules = self.remove_unit_productions()    # TODO  step 3 page 1   } step 2 page 2
-		self.Rules = self.remove_useless_productions() # Done  step 1 page 1  /
+		self.Rules = self.remove_useless_productions() # TODO  step 1 page 1  /
 
 		# Conversion
 
-		self.Rules = self.remove_terminals()           # Done~ step 3 page 2           TODO creates but does not replace, use test.txt
+		#self.Rules = self.remove_terminals()           # TODO step 3 page 2           TODO creates but does not replace, use test.txt
 		self.Rules = self.remove_duplicate_symbols()   # TODO  step 4 page 2
-
 		self.Rules = self.remove_start_symbol()        # Done  step 1 page 2
 
 		log("------------------- Chomsky Normal Form --------------------------")
@@ -218,16 +208,22 @@ class Grammar :
 		return self.Rules
 
 	def CYK(self, words: List[str]) -> bool:
+		cyk = {}
+		for lhs, rhs in self.Rules.items():
+			cyk[lhs] = [production.split() for production in rhs]
+		log("------------------- Cocke Younger Kasami -------------------------")
+		for lhs, rhs in cyk.items(): log( f"{lhs} -> {rhs}")
+
 		word_count = len(words)
 		T = [[set([]) for j in range(word_count)] for i in range(word_count)]
 	
 		for i in range(0, word_count):
-			for lhs, rhs in self.Rules.items():
+			for lhs, rhs in cyk.items():
 				for production in rhs:
 					if len(production) == 1 and production[0] == words[i]: T[i][i].add(lhs)
 			for j in range(i, -1, -1):
 				for k in range(j, i + 1):
-					for lhs, rhs in self.Rules.items():
+					for lhs, rhs in cyk.items():
 						for production in rhs:
 							if len(production) == 2 and production[0] in T[j][k] and production[1] in T[k + 1][i]: T[j][i].add(lhs)
 
@@ -235,13 +231,13 @@ class Grammar :
 		else: return False
 
 cfg = Grammar()
-for line in open("example.txt", "r", -1, "utf-8").readlines(): # ALL SYMBOlS MUST BE UPPERCASE
+for line in open("test.txt", "r", -1, "utf-8").readlines():
 	cfg.addRule(line.strip())
 cnf = cfg.CNF()
 
-log("------------------- Cocke Younger Kasami -------------------------")
 #sentence = log_input("Oración a analizar: ")
-sentence = "a dog cooks with a cat"
+#sentence = "a dog cooks with a cat"
+sentence = "a very heavy orange book"
 # S -> NP VP
 # NP VP = DET N VP
 # Det N VP = a dog VP
@@ -254,4 +250,4 @@ sentence = "a dog cooks with a cat"
 
 if cfg.CYK(sentence.split()): log("La oración pertenece a la gramática")
 else: log("La oración **NO** pertenece a la gramática")
-os.startfile("log.txt")
+#os.startfile("log.txt")
