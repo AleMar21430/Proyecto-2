@@ -175,8 +175,7 @@ class Grammar :
 					if segment not in self.Nonterminals:
 						for char in segment:
 							if char in self.Nonterminals: new_production.append(char)
-							else:
-								# Create a new non-terminal for the terminal
+							else: # Create a new non-terminal for the terminal
 								if char != " ":
 									new_non_terminal = f'Non_{char}'
 									new_cfg[new_non_terminal] = [char]
@@ -203,14 +202,12 @@ class Grammar :
 		new_cfg = {"S0": [self.Start_Rule[0]], **self.Rules.copy()}
 
 		new_cfg = {key: sorted(value) for key, value in new_cfg.items()}
-		log("------------------- Replace Start Symbol -------------------------")
-		for lhs, rhs in new_cfg.items() : log( f"{lhs} -> { ' | '.join(rhs)}")
+		log("------------------- Chomsky Normal Form --------------------------")
+		for lhs, rhs in self.Rules.items(): log( f"{lhs} -> { ' | '.join(rhs)}")
 		return new_cfg
 
 	def CNF(self) -> Dict[str, List[str]]:
 		self.Start_Rule = next(iter(self.Rules.items()))
-		# page 1: https://www.geeksforgeeks.org/simplifying-context-free-grammars/
-		# page 2: https://www.geeksforgeeks.org/converting-context-free-grammar-chomsky-normal-form/
 		log("------------------- Context Free Grammar -------------------------")
 		for lhs, rhs in self.Rules.items(): log( f"{lhs} -> { ' | '.join(rhs)}")
 
@@ -224,10 +221,7 @@ class Grammar :
 
 		if Symbolic: self.Rules = self.remove_terminals() # TODO  step 3 page 2
 		self.Rules = self.remove_duplicate_symbols()      # TODO  step 4 page 2
-		self.Rules = self.remove_start_symbol()           # Done  step 1 page 2
-
-		log("------------------- Chomsky Normal Form --------------------------")
-		for lhs, rhs in self.Rules.items(): log( f"{lhs} -> { ' | '.join(rhs)}")
+		self.Rules = self.remove_start_symbol()           # DONE  step 1 page 2
 
 	def CYK(self, words: List[str]):
 		cyk = {}
