@@ -153,7 +153,8 @@ class Grammar :
 							new_productions.append(production)
 					for non_t in self.Nonterminals:
 						if non_t in product:
-							if production not in new_productions: new_productions.append(production)
+							if production not in new_productions:
+								new_productions.append(production)
 			if new_productions:
 				new_cfg[lhs] = new_productions
 
@@ -202,11 +203,11 @@ class Grammar :
 		# CFG Simplificacion
 		self.Rules = self.remove_epsilon_productions() # DONE  step 2 page 1  \
 		self.Rules = self.remove_unit_productions()    # TODO  step 3 page 1   } step 2 page 2
-		self.Rules = self.remove_useless_productions() # TODO  step 1 page 1  /
+		self.Rules = self.remove_useless_productions() # DONE  step 1 page 1  /
 
 		# CNF Conversion
 
-		self.Rules = self.remove_terminals()           # TODO step 3 page 2           TODO creates but does not replace, use test.txt
+		self.Rules = self.remove_terminals()           # TODO  step 3 page 2
 		self.Rules = self.remove_duplicate_symbols()   # TODO  step 4 page 2
 		self.Rules = self.remove_start_symbol()        # Done  step 1 page 2
 
