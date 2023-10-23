@@ -1,5 +1,5 @@
 from typing import Dict, List
-import os
+import time, os
 global Release
 Logging = False
 def log(val: str):
@@ -163,28 +163,7 @@ class Grammar :
 
 	def remove_terminals(self) -> Dict[str, List[str]]:
 		new_cfg = self.Rules.copy()
-		lhs_counter = 0
 
-		# Iterate through each production rule
-		for lhs, rhs in self.Rules.items():
-			new_right_symbols = []
-			for productions in rhs:
-				for production in productions.split():
-					if not production.islower():
-						new_rhs = []
-						i = 0
-						while i < len(production):
-							if production[i].islower():
-								lhs = f'NONTERM{lhs_counter}'
-								lhs_counter += 1
-								new_cfg[lhs] = [production[i]]
-								new_rhs.append(lhs)
-							else: new_rhs.append(production[i])
-							i += 1
-						new_right_symbols.append("".join(new_rhs))
-					else: new_right_symbols = rhs
-			
-			new_cfg[lhs] = new_right_symbols
 		log("------------------- Remove Terminals -----------------------------")
 		for lhs, rhs in new_cfg.items() : log( f"{lhs} -> { ' | '.join(rhs)}")
 		return new_cfg
@@ -203,15 +182,14 @@ class Grammar :
 
 		#self.Rules                                    # TODO  try splitting uppercase terms to work with test.txt
 
-		# Simplificacion
-
+		# CFG Simplificacion
 		self.Rules = self.remove_epsilon_productions() # DONE  step 2 page 1  \
 		self.Rules = self.remove_unit_productions()    # TODO  step 3 page 1   } step 2 page 2
 		self.Rules = self.remove_useless_productions() # TODO  step 1 page 1  /
 
-		# Conversion
+		# CNF Conversion
 
-		#self.Rules = self.remove_terminals()          # TODO step 3 page 2           TODO creates but does not replace, use test.txt
+		self.Rules = self.remove_terminals()           # TODO step 3 page 2           TODO creates but does not replace, use test.txt
 		self.Rules = self.remove_duplicate_symbols()   # TODO  step 4 page 2
 		self.Rules = self.remove_start_symbol()        # Done  step 1 page 2
 
@@ -253,10 +231,11 @@ class Grammar :
 		log("------------------------------------------------------------------")
 
 
-Logging = True
+Logging = False
 Hardcoded = True
 Multicheck = True
 Convert_to_CNF = True
+Hardcoded_Sentence = "a dog cooks with a cat"
 
 if Logging: open("log.txt", "w", -1, "utf-8").write("")
 cfg = Grammar()
@@ -266,13 +245,13 @@ if Convert_to_CNF: cfg.CNF()
 if Multicheck:
 	while Multicheck:
 		if Hardcoded:
-			sentence = "a dog cooks with a cat"
+			sentence = Hardcoded_Sentence
 			Multicheck = False
 		else:
 			sentence = log_input("Oración a analizar: ")
 			if sentence == "": Multicheck = False
 else:
-	if Hardcoded: sentence = "a dog cooks with a cat"
+	if Hardcoded: sentence = Hardcoded_Sentence
 	else: sentence = log_input("Oración a analizar: ")
 #sentence = "(id*id)+id"
 

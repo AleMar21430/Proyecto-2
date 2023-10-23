@@ -22,63 +22,72 @@ Det -> a | the
 No Unit Productions
 ------------------- Remove Unit Productions ----------------------
 S -> NP VP
-VP -> cuts | VP PP | eats | cooks | drinks | V NP
+VP -> cooks | eats | drinks | VP PP | cuts | V NP
 PP -> P NP
 NP -> Det N | it | she
-V -> eats | cooks | drinks | cuts
+V -> drinks | eats | cuts | cooks
 P -> with | in
-N -> spoon | knife | fork | cat | juice | beer | meat | oven | soup | dog | cake
+N -> beer | fork | spoon | cake | soup | knife | oven | meat | dog | cat | juice
 Det -> the | a
 ------------------- Useless Productions --------------------------
 No Useless Productions
 ------------------- Remove Useless Productions -------------------
 S -> NP VP
-VP -> cuts | VP PP | eats | cooks | drinks | V NP
+VP -> cooks | eats | drinks | VP PP | cuts | V NP
 PP -> P NP
 NP -> Det N | it | she
-V -> eats | cooks | drinks | cuts
+V -> drinks | eats | cuts | cooks
 P -> with | in
-N -> spoon | knife | fork | cat | juice | beer | meat | oven | soup | dog | cake
+N -> beer | fork | spoon | cake | soup | knife | oven | meat | dog | cat | juice
+Det -> the | a
+------------------- Remove Terminals -----------------------------
+S -> NP VP
+VP -> cooks | eats | drinks | VP PP | cuts | V NP
+PP -> P NP
+NP -> Det N | it | she
+V -> drinks | eats | cuts | cooks
+P -> with | in
+N -> beer | fork | spoon | cake | soup | knife | oven | meat | dog | cat | juice
 Det -> the | a
 ------------------- Remove Duplicates ----------------------------
 S -> NP VP
-VP -> cuts | VP PP | eats | cooks | drinks | V NP
+VP -> cooks | eats | drinks | VP PP | cuts | V NP
 PP -> P NP
 NP -> Det N | it | she
-V -> eats | cooks | drinks | cuts
+V -> drinks | eats | cuts | cooks
 P -> with | in
-N -> spoon | knife | fork | cat | juice | beer | meat | oven | soup | dog | cake
+N -> beer | fork | spoon | cake | soup | knife | oven | meat | dog | cat | juice
 Det -> the | a
 ------------------- Remove Start Symbol --------------------------
 S0 -> S
 S -> NP VP
-VP -> cuts | VP PP | eats | cooks | drinks | V NP
+VP -> cooks | eats | drinks | VP PP | cuts | V NP
 PP -> P NP
 NP -> Det N | it | she
-V -> eats | cooks | drinks | cuts
+V -> drinks | eats | cuts | cooks
 P -> with | in
-N -> spoon | knife | fork | cat | juice | beer | meat | oven | soup | dog | cake
+N -> beer | fork | spoon | cake | soup | knife | oven | meat | dog | cat | juice
 Det -> the | a
 ------------------- Chomsky Normal Form --------------------------
 S0 -> S
 S -> NP VP
-VP -> cuts | VP PP | eats | cooks | drinks | V NP
+VP -> cooks | eats | drinks | VP PP | cuts | V NP
 PP -> P NP
 NP -> Det N | it | she
-V -> eats | cooks | drinks | cuts
+V -> drinks | eats | cuts | cooks
 P -> with | in
-N -> spoon | knife | fork | cat | juice | beer | meat | oven | soup | dog | cake
+N -> beer | fork | spoon | cake | soup | knife | oven | meat | dog | cat | juice
 Det -> the | a
 ------------------- CYK Internal Dict ----------------------------
 S0 -> [['S']]
 S -> [['NP', 'VP']]
-VP -> [['cuts'], ['VP', 'PP'], ['eats'], ['cooks'], ['drinks'], ['V', 'NP']]
+VP -> [['cooks'], ['eats'], ['drinks'], ['VP', 'PP'], ['cuts'], ['V', 'NP']]
 PP -> [['P', 'NP']]
 NP -> [['Det', 'N'], ['it'], ['she']]
-V -> [['eats'], ['cooks'], ['drinks'], ['cuts']]
+V -> [['drinks'], ['eats'], ['cuts'], ['cooks']]
 P -> [['with'], ['in']]
-N -> [['spoon'], ['knife'], ['fork'], ['cat'], ['juice'], ['beer'], ['meat'], ['oven'], ['soup'], ['dog'], ['cake']]
+N -> [['beer'], ['fork'], ['spoon'], ['cake'], ['soup'], ['knife'], ['oven'], ['meat'], ['dog'], ['cat'], ['juice']]
 Det -> [['the'], ['a']]
 ------------------- Cocke Younger Kasami Result ------------------
-La oración || a dog cooks with a cat || **SI** pertenece a la gramática
+La oración || a dog cooks with a cat || SI pertenece a la gramática✅
 ------------------------------------------------------------------
