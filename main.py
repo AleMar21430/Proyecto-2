@@ -34,38 +34,12 @@ class Grammar :
 		return new_cfg
 
 	def remove_epsilon_productions(self) -> Dict[str, List[str]]:
-		# Step 1: Find nullable variables
-		nullable = set()
-		changed = True
-		while changed:
-			changed = False
-			for variable, rhs in self.Rules.items():
-				if variable in nullable:
-					continue
-				for production in rhs:
-					if all(symbol in nullable for symbol in production):
-						nullable.add(variable)
-						changed = True
-		nullable = list(nullable)
-		log("------------------- Nullable Symbols -----------------------------")
-		if len(nullable) == 0: log("No Nullable Symbols")
-		else: log(nullable)
-
-		# Step 2: Remove rhs containing nullable variables
+		# Step 1: Remove rhs epsilon
 		new_cfg = self.Rules.copy()
-		for variable, rhs in self.Rules.items():
-			updated_rhs = [p for p in rhs if all(s not in nullable for s in p)]
-			new_cfg[variable] = updated_rhs
-
-		# Step 3: Remove empty rhs
 		for variable, rhs in new_cfg.items():
-			new_cfg[variable] = [p for p in rhs if p != 'ε']
+			new_cfg[variable] = [symbol for symbol in rhs if symbol != 'ε']
 			new_cfg[variable] = [item for item in new_cfg[variable] if item.strip() != ""]
 
-		# Step 4: Update other rhs
-		for variable, rhs in new_cfg.items():
-			for production in rhs:
-				new_cfg[variable] = rhs
 		log("------------------- Remove Epsilon Productions -------------------")
 		for lhs, rhs in new_cfg.items()   : log( f"{lhs} -> { ' | '.join(rhs)}")
 		return new_cfg
@@ -148,8 +122,8 @@ class Grammar :
 						if production not in new_productions:
 							new_productions.append(production)
 					for non_t in self.Nonterminals:
-							if non_t in product:
-								new_productions.append(production)
+						if non_t in product:
+							if production not in new_productions: new_productions.append(production)
 			if new_productions:
 				new_cfg[lhs] = new_productions
 
@@ -248,7 +222,7 @@ Hardcoded_Sentence = "a dog cooks with a cat"
 
 if Logging: open("log.txt", "w", -1, "utf-8").write("")
 cfg = Grammar()
-for line in open("cfg.txt", "r", -1, "utf-8").readlines():
+for line in open("cnf_showcase.txt", "r", -1, "utf-8").readlines():
 	cfg.addRule(line.strip())
 if Convert_to_CNF: cfg.CNF()
 if Multicheck:
