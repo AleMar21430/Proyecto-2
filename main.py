@@ -48,7 +48,6 @@ class Grammar :
 			new_cfg = self.Rules.copy()
 		else:
 			log([str for str in nullable])
-			new_rhs = []
 			new_cfg = {}
 			free = []
 			for lhs, rhs in self.Rules.items():
@@ -61,11 +60,9 @@ class Grammar :
 				new_productions.append(production)
 				for modificacion in range (len(new_productions)):
 					new_productions[modificacion] = new_productions[modificacion].replace("ε","")
-					new_productions[modificacion] = new_productions[modificacion].replace("  "," ")
 				free = new_productions
 				new_productions = free
-				new_rhs.append(new_productions)
-				new_cfg[lhs] = new_rhs.pop()
+				new_cfg[lhs] = new_productions
 
 		new_cfg = {key: sorted(value) for key, value in new_cfg.items()}
 		log("------------------- Remove Epsilon Productions -------------------")
@@ -88,9 +85,11 @@ class Grammar :
 		log("------------------- Unit Productions -----------------------------")
 		no_unit_prod = True
 		for lhs, rhs in unit_productions.items() :
-			if rhs != []: log( f"{lhs} -> { ' | '.join(rhs)}")
-			else : no_unit_prod = False
-		if not no_unit_prod: log("No Unit Productions")
+			if rhs != []:
+				log( f"{lhs} -> { ' | '.join(rhs)}")
+			else :
+				no_unit_prod = False
+		if no_unit_prod: log("No Unit Productions")
 
 		# Step 2: Find all reachable non-terminals for each non-terminal
 		for _ in range(len(self.Rules)):
