@@ -26,15 +26,6 @@ class Grammar :
 			for term in rhs:
 				self.Terminals.append(term)
 
-	def remove_start_symbol(self) -> Dict[str, List[str]]:
-		new_cfg = self.Rules.copy()
-		self.Rules["S0"] = [next(iter(self.Rules.keys()))]
-
-		new_cfg = {key: sorted(value) for key, value in new_cfg.items()}
-		log("------------------- Remove Start Symbol --------------------------")
-		for lhs, rhs in new_cfg.items() : log( f"{lhs} -> { ' | '.join(rhs)}")
-		return new_cfg
-
 	def remove_epsilon_productions(self) -> Dict[str, List[str]]:
 		# Step 1: Remove rhs epsilon
 		nullable = []
@@ -162,15 +153,14 @@ class Grammar :
 		useless = []
 		for lhs in self.Rules.keys():
 			if lhs not in reachable_rhs:
-				if lhs != self.Start_Symbol[0]:
+				if lhs != self.Start_Rule[0]:
 					new_cfg.pop(lhs, None)
 					useless.append(lhs)
 
 		if len(useless) == 0: log("No Useless Productions")
 		else: log(useless)
 
-		first_item = next(iter(self.Rules.items()))
-		new_cfg = {first_item[0]: first_item[1], **new_cfg}
+		new_cfg = {self.Start_Rule[0]: self.Start_Rule[1], **new_cfg}
 
 		new_cfg = {key: sorted(value) for key, value in new_cfg.items()}
 		log("------------------- Remove Useless Productions -------------------")
@@ -191,8 +181,16 @@ class Grammar :
 		for lhs, rhs in new_cfg.items(): log( f"{lhs} -> { ' | '.join(rhs)}")
 		return new_cfg
 
+	def remove_start_symbol(self) -> Dict[str, List[str]]:
+		new_cfg = {"S0": [self.Start_Rule[0]], **self.Rules.copy()}
+
+		new_cfg = {key: sorted(value) for key, value in new_cfg.items()}
+		log("------------------- Replace Start Symbol -------------------------")
+		for lhs, rhs in new_cfg.items() : log( f"{lhs} -> { ' | '.join(rhs)}")
+		return new_cfg
+
 	def CNF(self) -> Dict[str, List[str]]:
-		self.Start_Symbol = next(iter(self.Rules.items()))
+		self.Start_Rule = next(iter(self.Rules.items()))
 		# page 1: https://www.geeksforgeeks.org/simplifying-context-free-grammars/
 		# page 2: https://www.geeksforgeeks.org/converting-context-free-grammar-chomsky-normal-form/
 		log("------------------- Context Free Grammar -------------------------")
@@ -255,7 +253,7 @@ Hardcoded_Sentence = "a dog cooks with a cat"
 
 if Logging: open("log.txt", "w", -1, "utf-8").write("")
 cfg = Grammar()
-for line in open("cfg.txt", "r", -1, "utf-8").readlines():
+for line in open("cnf.txt", "r", -1, "utf-8").readlines():
 	cfg.addRule(line.strip())
 if Convert_to_CNF: cfg.CNF()
 if Multicheck:
