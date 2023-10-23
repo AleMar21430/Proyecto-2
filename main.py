@@ -62,7 +62,7 @@ class Grammar :
 					new_productions[modificacion] = new_productions[modificacion].replace("ε","")
 				free = new_productions
 				new_productions = free
-				new_cfg[lhs] = new_productions
+				new_cfg[lhs] = list(set(new_productions))
 
 		new_cfg = {key: sorted(value) for key, value in new_cfg.items()}
 		log("------------------- Remove Epsilon Productions -------------------")
@@ -192,14 +192,14 @@ class Grammar :
 		return new_cfg
 
 	def CNF(self) -> Dict[str, List[str]]:
+		self.Start_Symbol = next(iter(self.Rules.items()))
 		# page 1: https://www.geeksforgeeks.org/simplifying-context-free-grammars/
 		# page 2: https://www.geeksforgeeks.org/converting-context-free-grammar-chomsky-normal-form/
 		log("------------------- Context Free Grammar -------------------------")
 		for lhs, rhs in self.Rules.items(): log( f"{lhs} -> { ' | '.join(rhs)}")
 
-		self.Start_Symbol = next(iter(self.Rules.items()))
-
 		# CFG Simplificacion
+
 		self.Rules = self.remove_epsilon_productions() # DONE  step 2 page 1  \
 		self.Rules = self.remove_unit_productions()    # TODO  step 3 page 1   } step 2 page 2
 		self.Rules = self.remove_useless_productions() # DONE  step 1 page 1  /
@@ -246,7 +246,6 @@ class Grammar :
 		else:
 			log(f"La oración || {' '.join(words)} || NO pertenece a la gramática⛔")
 		log("------------------------------------------------------------------")
-
 
 Logging = False
 Hardcoded = True
