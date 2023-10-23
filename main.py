@@ -27,9 +27,8 @@ class Grammar :
 				self.Terminals.append(term)
 
 	def remove_start_symbol(self) -> Dict[str, List[str]]:
-		new_cfg = {}
-		new_cfg["S0"] = [next(iter(self.Rules.keys()))] # if starts with S
-		new_cfg = {**new_cfg, **self.Rules}
+		new_cfg = self.Rules.copy()
+		self.Rules["S0"] = [next(iter(self.Rules.keys()))]
 		log("------------------- Remove Start Symbol --------------------------")
 		for lhs, rhs in new_cfg.items() : log( f"{lhs} -> { ' | '.join(rhs)}")
 		return new_cfg
@@ -125,32 +124,43 @@ class Grammar :
 								if symbol in reachable_rhs:
 									reachable_rhs.add(symbol)
 									pending.append(symbol)
-						if product.isupper() or product in self.Nonterminals:
+						if product.isupper():
 							if product not in reachable_rhs:
 								reachable_rhs.add(product)
 								pending.append(product)
+						else:
+							for non_t in self.Nonterminals:
+								if non_t in product:
+									reachable_rhs.add(non_t)
 
+		log("------------------- Reachable Non Terminals ----------------------")
+		if len(reachable_rhs) == 0:log("No Reachable Terminals")
+		else: log([str for str in reachable_rhs])
 		# Step 2: Identify reachable productions
 		new_cfg = {}
-		for nonterminal, productions in self.Rules.items():
+		for lhs, rhs in self.Rules.items():
 			new_productions = []
-			for production in productions:
+			for production in rhs:
 				for product in production.split():
 					if product.islower():
 						new_productions.append(product)
 					if product in reachable_rhs:
 						if production not in new_productions:
 							new_productions.append(production)
+					for non_t in self.Nonterminals:
+							if non_t in product:
+								new_productions.append(production)
 			if new_productions:
-				new_cfg[nonterminal] = new_productions
+				new_cfg[lhs] = new_productions
 
 		# Step 3: Remove unused non-terminals
 		log("------------------- Useless Productions --------------------------")
 		useless = []
 		for lhs in self.Rules.keys():
 			if lhs not in reachable_rhs:
-				if lhs == next(iter(self.Rules.items())): useless.append(lhs)
-				new_cfg.pop(lhs, None)
+				if lhs != self.Start_Symbol[0]:
+					new_cfg.pop(lhs, None)
+					useless.append(lhs)
 
 		if len(useless) == 0: log("No Useless Productions")
 		else: log(useless)
@@ -163,7 +173,6 @@ class Grammar :
 
 	def remove_terminals(self) -> Dict[str, List[str]]:
 		new_cfg = self.Rules.copy()
-
 		log("------------------- Remove Terminals -----------------------------")
 		for lhs, rhs in new_cfg.items() : log( f"{lhs} -> { ' | '.join(rhs)}")
 		return new_cfg
@@ -180,7 +189,7 @@ class Grammar :
 		log("------------------- Context Free Grammar -------------------------")
 		for lhs, rhs in self.Rules.items(): log( f"{lhs} -> { ' | '.join(rhs)}")
 
-		#self.Rules                                    # TODO  try splitting uppercase terms to work with test.txt
+		self.Start_Symbol = next(iter(self.Rules.items()))
 
 		# CFG Simplificacion
 		self.Rules = self.remove_epsilon_productions() # DONE  step 2 page 1  \

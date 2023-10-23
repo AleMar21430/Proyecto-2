@@ -1,0 +1,5 @@
+S -> ABCd
+A -> BC
+B -> bB | ε
+C -> cC | ε
+E -> e
