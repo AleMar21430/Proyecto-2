@@ -29,17 +29,45 @@ class Grammar :
 	def remove_start_symbol(self) -> Dict[str, List[str]]:
 		new_cfg = self.Rules.copy()
 		self.Rules["S0"] = [next(iter(self.Rules.keys()))]
+
+		new_cfg = {key: sorted(value) for key, value in new_cfg.items()}
 		log("------------------- Remove Start Symbol --------------------------")
 		for lhs, rhs in new_cfg.items() : log( f"{lhs} -> { ' | '.join(rhs)}")
 		return new_cfg
 
 	def remove_epsilon_productions(self) -> Dict[str, List[str]]:
 		# Step 1: Remove rhs epsilon
-		new_cfg = self.Rules.copy()
-		for variable, rhs in new_cfg.items():
-			new_cfg[variable] = [symbol for symbol in rhs if symbol != 'ε']
-			new_cfg[variable] = [item for item in new_cfg[variable] if item.strip() != ""]
+		nullable = []
+		for lhs, rhs in self.Rules.items():
+			for symbols in rhs:
+				if 'ε' in symbols:
+					nullable.append(lhs)
+		log("------------------- Epsilon Productions --------------------------")
+		if len(nullable) == 0:
+			log("No Epsilon Productions")
+			new_cfg = self.Rules.copy()
+		else:
+			log([str for str in nullable])
+			new_rhs = []
+			new_cfg = {}
+			free = []
+			for lhs, rhs in self.Rules.items():
+				new_productions = []
+				for production in rhs:
+					for non_terminals in nullable:
+						if non_terminals in production:
+							new_productions.append(production)
+							new_productions.append(production.replace(non_terminals,""))
+				new_productions.append(production)
+				for modificacion in range (len(new_productions)):
+					new_productions[modificacion] = new_productions[modificacion].replace("ε","")
+					new_productions[modificacion] = new_productions[modificacion].replace("  "," ")
+				free = new_productions
+				new_productions = free
+				new_rhs.append(new_productions)
+				new_cfg[lhs] = new_rhs.pop()
 
+		new_cfg = {key: sorted(value) for key, value in new_cfg.items()}
 		log("------------------- Remove Epsilon Productions -------------------")
 		for lhs, rhs in new_cfg.items()   : log( f"{lhs} -> { ' | '.join(rhs)}")
 		return new_cfg
@@ -80,6 +108,8 @@ class Grammar :
 				new_productions.extend(new_cfg[unit])
 			new_cfg[non_terminal].extend(new_productions)
 			new_cfg[non_terminal] = list(set(new_cfg[non_terminal]))
+
+		new_cfg = {key: sorted(value) for key, value in new_cfg.items()}
 		log("------------------- Remove Unit Productions ----------------------")
 		for lhs, rhs in new_cfg.items() : log( f"{lhs} -> { ' | '.join(rhs)}")
 		return new_cfg
@@ -141,18 +171,22 @@ class Grammar :
 
 		first_item = next(iter(self.Rules.items()))
 		new_cfg = {first_item[0]: first_item[1], **new_cfg}
+
+		new_cfg = {key: sorted(value) for key, value in new_cfg.items()}
 		log("------------------- Remove Useless Productions -------------------")
 		for lhs, rhs in new_cfg.items()   : log( f"{lhs} -> { ' | '.join(rhs)}")
 		return new_cfg
 
 	def remove_terminals(self) -> Dict[str, List[str]]:
 		new_cfg = self.Rules.copy()
+		new_cfg = {key: sorted(value) for key, value in new_cfg.items()}
 		log("------------------- Remove Terminals -----------------------------")
 		for lhs, rhs in new_cfg.items() : log( f"{lhs} -> { ' | '.join(rhs)}")
 		return new_cfg
 
 	def remove_duplicate_symbols(self) -> Dict[str, List[str]]:
 		new_cfg = self.Rules.copy()
+		new_cfg = {key: sorted(value) for key, value in new_cfg.items()}
 		log("------------------- Remove Duplicates ----------------------------")
 		for lhs, rhs in new_cfg.items(): log( f"{lhs} -> { ' | '.join(rhs)}")
 		return new_cfg
@@ -222,7 +256,7 @@ Hardcoded_Sentence = "a dog cooks with a cat"
 
 if Logging: open("log.txt", "w", -1, "utf-8").write("")
 cfg = Grammar()
-for line in open("cnf_showcase.txt", "r", -1, "utf-8").readlines():
+for line in open("cfg.txt", "r", -1, "utf-8").readlines():
 	cfg.addRule(line.strip())
 if Convert_to_CNF: cfg.CNF()
 if Multicheck:
