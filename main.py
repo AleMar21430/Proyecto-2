@@ -219,7 +219,7 @@ class Grammar :
 
 		# CNF Conversion
 
-		if Symbolic: self.Rules = self.remove_terminals() # TODO  step 3 page 2
+		if Symbolic: self.Rules = self.remove_terminals() # DONE? step 3 page 2
 		self.Rules = self.remove_duplicate_symbols()      # TODO  step 4 page 2
 		self.Rules = self.remove_start_symbol()           # DONE  step 1 page 2
 
