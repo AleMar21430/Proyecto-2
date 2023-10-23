@@ -1,7 +1,6 @@
 from typing import Dict, List
 import time, os
-global Release
-Logging = False
+global Release, Logging, Symbolic
 def log(val: str):
 	print(val)
 	if Logging: open("log.txt", "a", -1, "utf-8").write(str(val) + "\n")
@@ -159,7 +158,6 @@ class Grammar :
 
 		if len(useless) == 0: log("No Useless Productions")
 		else: log(useless)
-
 		new_cfg = {self.Start_Rule[0]: self.Start_Rule[1], **new_cfg}
 
 		new_cfg = {key: sorted(value) for key, value in new_cfg.items()}
@@ -169,6 +167,26 @@ class Grammar :
 
 	def remove_terminals(self) -> Dict[str, List[str]]:
 		new_cfg = self.Rules.copy()
+		for lhs, rhs in self.Rules.items():
+			updated_productions = []
+			for production in rhs:
+				new_production = []
+				for segment in production.split():
+					if segment not in self.Nonterminals:
+						for char in segment:
+							if char in self.Nonterminals: new_production.append(char)
+							else:
+								# Create a new non-terminal for the terminal
+								if char != " ":
+									new_non_terminal = f'Non_{char}'
+									new_cfg[new_non_terminal] = [char]
+									new_production.append(new_non_terminal)
+						updated_productions.append(''.join(new_production))
+					else:
+						new_production.append(segment)
+						updated_productions.extend(new_production)
+				new_cfg[lhs] = updated_productions
+
 		new_cfg = {key: sorted(value) for key, value in new_cfg.items()}
 		log("------------------- Remove Terminals -----------------------------")
 		for lhs, rhs in new_cfg.items() : log( f"{lhs} -> { ' | '.join(rhs)}")
@@ -199,14 +217,14 @@ class Grammar :
 		# CFG Simplificacion
 
 		self.Rules = self.remove_epsilon_productions() # DONE  step 2 page 1  \
-		self.Rules = self.remove_unit_productions()    # TODO  step 3 page 1   } step 2 page 2
+		self.Rules = self.remove_unit_productions()    # DONE? step 3 page 1   } step 2 page 2
 		self.Rules = self.remove_useless_productions() # DONE  step 1 page 1  /
 
 		# CNF Conversion
 
-		self.Rules = self.remove_terminals()           # TODO  step 3 page 2
-		self.Rules = self.remove_duplicate_symbols()   # TODO  step 4 page 2
-		self.Rules = self.remove_start_symbol()        # Done  step 1 page 2
+		if Symbolic: self.Rules = self.remove_terminals() # TODO  step 3 page 2
+		self.Rules = self.remove_duplicate_symbols()      # TODO  step 4 page 2
+		self.Rules = self.remove_start_symbol()           # Done  step 1 page 2
 
 		log("------------------- Chomsky Normal Form --------------------------")
 		for lhs, rhs in self.Rules.items(): log( f"{lhs} -> { ' | '.join(rhs)}")
@@ -250,10 +268,11 @@ Hardcoded = True
 Multicheck = True
 Convert_to_CNF = True
 Hardcoded_Sentence = "a dog cooks with a cat"
+Symbolic = False
 
 if Logging: open("log.txt", "w", -1, "utf-8").write("")
 cfg = Grammar()
-for line in open("cnf.txt", "r", -1, "utf-8").readlines():
+for line in open("cfg.txt", "r", -1, "utf-8").readlines():
 	cfg.addRule(line.strip())
 if Convert_to_CNF: cfg.CNF()
 if Multicheck:
